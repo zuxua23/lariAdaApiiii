@@ -1,0 +1,535 @@
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace InventoryControl.Migrations
+{
+    /// <inheritdoc />
+    public partial class init : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.CreateTable(
+                name: "tb_DO",
+                columns: table => new
+                {
+                    do_id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    do_number = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    scanner_type = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    status = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    createdBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    createdAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    isDelete = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tb_DO", x => x.do_id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tb_Item",
+                columns: table => new
+                {
+                    id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    itm_id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    itm_name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_by = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_by = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    isDelete = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tb_Item", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tb_Location",
+                columns: table => new
+                {
+                    id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    loc_id = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    loc_name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    loc_desc = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_by = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_by = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    isDelete = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tb_Location", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tb_Permission",
+                columns: table => new
+                {
+                    id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    per_id = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    per_code = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    per_name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    per_group = table.Column<int>(type: "int", nullable: false),
+                    per_desc = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_by = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_at = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tb_Permission", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tb_Role",
+                columns: table => new
+                {
+                    id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    rol_id = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    rol_code = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    rol_name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    rol_desc = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    isDelete = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tb_Role", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tb_Stock_Taking",
+                columns: table => new
+                {
+                    st_id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    remark = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    status = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    created_by = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tb_Stock_Taking", x => x.st_id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tb_User",
+                columns: table => new
+                {
+                    id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    usr_id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    usr_fullname = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    usr_name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    usr_password = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_by = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_by = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    isDelete = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tb_User", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tb_DO_Detail",
+                columns: table => new
+                {
+                    do_detail_id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    do_id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    itm_id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    qty_required = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tb_DO_Detail", x => x.do_detail_id);
+                    table.ForeignKey(
+                        name: "FK_tb_DO_Detail_tb_DO_do_id",
+                        column: x => x.do_id,
+                        principalTable: "tb_DO",
+                        principalColumn: "do_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_tb_DO_Detail_tb_Item_itm_id",
+                        column: x => x.itm_id,
+                        principalTable: "tb_Item",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tb_Reader",
+                columns: table => new
+                {
+                    id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    rdr_id = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    loc_id = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    rdr_name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_by = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_by = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    isDelete = table.Column<int>(type: "int", nullable: true),
+                    LocationNavigationId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tb_Reader", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_tb_Reader_tb_Location_LocationNavigationId",
+                        column: x => x.LocationNavigationId,
+                        principalTable: "tb_Location",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tb_Tag",
+                columns: table => new
+                {
+                    id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    tag_id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    tag_epc = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    loc_id = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_by = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_by = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    isDelete = table.Column<int>(type: "int", nullable: true),
+                    LocationId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    ItemId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tb_Tag", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_tb_Tag_tb_Item_ItemId",
+                        column: x => x.ItemId,
+                        principalTable: "tb_Item",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_tb_Tag_tb_Location_LocationId",
+                        column: x => x.LocationId,
+                        principalTable: "tb_Location",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tb_Role_Permission",
+                columns: table => new
+                {
+                    id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    rpr_id = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    per_id = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    rol_id = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_by = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    is_override = table.Column<int>(type: "int", nullable: false),
+                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    PermissionId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tb_Role_Permission", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_tb_Role_Permission_tb_Permission_PermissionId",
+                        column: x => x.PermissionId,
+                        principalTable: "tb_Permission",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_tb_Role_Permission_tb_Role_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "tb_Role",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tb_User_Role",
+                columns: table => new
+                {
+                    id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    uro_id = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    rol_id = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_by = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_by = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tb_User_Role", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_tb_User_Role_tb_Role_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "tb_Role",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tb_Transaction",
+                columns: table => new
+                {
+                    trs_id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    trs_type = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    reference_id = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    rdr_id = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    created_by = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tb_Transaction", x => x.trs_id);
+                    table.ForeignKey(
+                        name: "FK_tb_Transaction_tb_Reader_rdr_id",
+                        column: x => x.rdr_id,
+                        principalTable: "tb_Reader",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tb_History",
+                columns: table => new
+                {
+                    id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    his_id = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    itm_id = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    tag_id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    trs_type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ref_no = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_by = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    action = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ItemId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tb_History", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_tb_History_tb_Item_ItemId",
+                        column: x => x.ItemId,
+                        principalTable: "tb_Item",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "FK_tb_History_tb_Tag_tag_id",
+                        column: x => x.tag_id,
+                        principalTable: "tb_Tag",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tb_Stock_Taking_Detail",
+                columns: table => new
+                {
+                    st_detail_id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    st_id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    tag_id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    action = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tb_Stock_Taking_Detail", x => x.st_detail_id);
+                    table.ForeignKey(
+                        name: "FK_tb_Stock_Taking_Detail_tb_Stock_Taking_st_id",
+                        column: x => x.st_id,
+                        principalTable: "tb_Stock_Taking",
+                        principalColumn: "st_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_tb_Stock_Taking_Detail_tb_Tag_tag_id",
+                        column: x => x.tag_id,
+                        principalTable: "tb_Tag",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "tb_Transaction_Detail",
+                columns: table => new
+                {
+                    trs_detail_id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    trs_id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    tag_id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    itm_id = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tb_Transaction_Detail", x => x.trs_detail_id);
+                    table.ForeignKey(
+                        name: "FK_tb_Transaction_Detail_tb_Item_itm_id",
+                        column: x => x.itm_id,
+                        principalTable: "tb_Item",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "FK_tb_Transaction_Detail_tb_Tag_tag_id",
+                        column: x => x.tag_id,
+                        principalTable: "tb_Tag",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "FK_tb_Transaction_Detail_tb_Transaction_trs_id",
+                        column: x => x.trs_id,
+                        principalTable: "tb_Transaction",
+                        principalColumn: "trs_id");
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_DO_Detail_do_id",
+                table: "tb_DO_Detail",
+                column: "do_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_DO_Detail_itm_id",
+                table: "tb_DO_Detail",
+                column: "itm_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_History_ItemId",
+                table: "tb_History",
+                column: "ItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_History_tag_id",
+                table: "tb_History",
+                column: "tag_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_Item_itm_id",
+                table: "tb_Item",
+                column: "itm_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_Reader_LocationNavigationId",
+                table: "tb_Reader",
+                column: "LocationNavigationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_Role_Permission_PermissionId",
+                table: "tb_Role_Permission",
+                column: "PermissionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_Role_Permission_RoleId",
+                table: "tb_Role_Permission",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_Stock_Taking_Detail_st_id",
+                table: "tb_Stock_Taking_Detail",
+                column: "st_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_Stock_Taking_Detail_tag_id",
+                table: "tb_Stock_Taking_Detail",
+                column: "tag_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_Tag_ItemId",
+                table: "tb_Tag",
+                column: "ItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_Tag_LocationId",
+                table: "tb_Tag",
+                column: "LocationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_Tag_tag_id",
+                table: "tb_Tag",
+                column: "tag_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_Transaction_rdr_id",
+                table: "tb_Transaction",
+                column: "rdr_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_Transaction_Detail_itm_id",
+                table: "tb_Transaction_Detail",
+                column: "itm_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_Transaction_Detail_tag_id",
+                table: "tb_Transaction_Detail",
+                column: "tag_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_Transaction_Detail_trs_id",
+                table: "tb_Transaction_Detail",
+                column: "trs_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_User_usr_id",
+                table: "tb_User",
+                column: "usr_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tb_User_Role_RoleId",
+                table: "tb_User_Role",
+                column: "RoleId");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "tb_DO_Detail");
+
+            migrationBuilder.DropTable(
+                name: "tb_History");
+
+            migrationBuilder.DropTable(
+                name: "tb_Role_Permission");
+
+            migrationBuilder.DropTable(
+                name: "tb_Stock_Taking_Detail");
+
+            migrationBuilder.DropTable(
+                name: "tb_Transaction_Detail");
+
+            migrationBuilder.DropTable(
+                name: "tb_User");
+
+            migrationBuilder.DropTable(
+                name: "tb_User_Role");
+
+            migrationBuilder.DropTable(
+                name: "tb_DO");
+
+            migrationBuilder.DropTable(
+                name: "tb_Permission");
+
+            migrationBuilder.DropTable(
+                name: "tb_Stock_Taking");
+
+            migrationBuilder.DropTable(
+                name: "tb_Tag");
+
+            migrationBuilder.DropTable(
+                name: "tb_Transaction");
+
+            migrationBuilder.DropTable(
+                name: "tb_Role");
+
+            migrationBuilder.DropTable(
+                name: "tb_Item");
+
+            migrationBuilder.DropTable(
+                name: "tb_Reader");
+
+            migrationBuilder.DropTable(
+                name: "tb_Location");
+        }
+    }
+}

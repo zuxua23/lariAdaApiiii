@@ -1,0 +1,42 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace InventoryControl.Entity;
+
+[Table("tb_History")]
+public class History
+{
+    [Key]
+    [Column("id")]
+    public string Id { get; set; }
+
+    [Required]
+    [Column("his_id")]
+    public string HisId { get; set; }
+
+    [Required]
+    [Column("itm_id")]
+    public string ItmId { get; set; }
+
+    [Required]
+    [Column("tag_id")]
+    public string TagId { get; set; }
+
+    [Column("trs_type")]
+    public string Type { get; set; }
+    [Column("ref_no")]
+    public string Reference { get; set; }
+
+
+    [Column("created_by")]
+    public string CreatedBy { get; set; }
+
+    [Column("created_at")]
+    public DateTime CreatedAt { get; set; }
+
+    [Column("action")]
+    public string Action { get; set; }
+
+    public Item Item { get; set; }
+    public Tag Tag { get; set; }
+}

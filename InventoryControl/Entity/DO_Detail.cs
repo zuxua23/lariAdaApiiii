@@ -1,0 +1,25 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace InventoryControl.Entity;
+
+[Table("tb_DO_Detail")]
+public class DODetail
+{
+    [Key]
+    [Column("do_detail_id")]
+    public string DoDetailId { get; set; }
+
+    [Column("do_id")]
+    public string DoId { get; set; }
+
+    [Column("itm_id")]
+    public string ItemId { get; set; }
+
+    [Column("qty_required")]
+    public int? QtyRequired { get; set; }
+
+    public DO? DO { get; set; }
+
+    public Item? Item { get; set; }
+}

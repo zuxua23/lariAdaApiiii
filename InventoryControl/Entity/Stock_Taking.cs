@@ -1,0 +1,25 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace InventoryControl.Entity;
+
+[Table("tb_Stock_Taking")]
+public class StockTaking
+{
+    [Key]
+    [Column("st_id")]
+    public string StockTakingId { get; set; }
+
+    [Column("remark")]
+    public string? Remark { get; set; }
+
+    [Column("status")]
+    public string? Status { get; set; }
+
+    [Column("created_by")]
+    public string? CreatedBy { get; set; }
+
+    [Column("created_at")]
+    public DateTime? CreatedAt { get; set; }
+
+}
