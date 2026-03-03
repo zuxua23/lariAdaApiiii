@@ -8,16 +8,16 @@ public class Transaction
 {
     [Key]
     [Column("trs_id")]
-    public string TransactionId { get; set; }
+    public string TrsId { get; set; }
 
     [Column("trs_type")]
-    public string? TransactionType { get; set; }
+    public string? TrsType { get; set; }
 
     [Column("reference_id")]
     public string? ReferenceId { get; set; }
 
     [Column("rdr_id")]
-    public string? ReaderId { get; set; }
+    public string? RdrId { get; set; }
 
     [Column("created_by")]
     public string? CreatedBy { get; set; }

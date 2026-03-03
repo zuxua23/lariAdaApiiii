@@ -46,7 +46,7 @@ public class LocationService : ILocationService
             throw new Exception("Location tidak ditemukan");
 
         location.LocId = dto.LocId;
-        location.name = dto.name;
+        location.Name = dto.Name;
         location.Description = dto.Description;
         location.UpdatedBy = updatedBy;
         location.UpdatedAt = DateTime.UtcNow;

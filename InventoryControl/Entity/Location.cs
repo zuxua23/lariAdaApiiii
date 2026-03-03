@@ -16,7 +16,7 @@ public class Location
 
     [Required]
     [Column("loc_name")]
-    public string name { get; set; }
+    public string Name { get; set; }
 
     [Required]
     [Column("loc_desc")]

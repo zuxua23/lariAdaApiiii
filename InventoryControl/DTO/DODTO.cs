@@ -30,3 +30,7 @@ public class DODetailResponseDto
     public string? ItemName { get; set; }
     public int? QtyRequired { get; set; }
 }
+public class DOStatusUpdateDto
+{
+    public string Status { get; set; } = null!;
+}

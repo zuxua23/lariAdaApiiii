@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace InventoryControl.Entity;
 
 [Table("tb_Item")]
-[Index(nameof(ItemId), IsUnique = true)]
+[Index(nameof(ItmId), IsUnique = true)]
 
 public class Item
 {

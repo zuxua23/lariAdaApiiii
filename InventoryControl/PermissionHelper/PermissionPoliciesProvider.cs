@@ -1,4 +1,4 @@
-﻿namespace InventoryControl.Permission;
+﻿namespace InventoryControl.PermissionHelper;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
@@ -12,7 +12,6 @@ public class PermissionPolicyProvider : DefaultAuthorizationPolicyProvider
 
     public override Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
     {
-        // Jika policy belum ada → buat otomatis
         var policy = new AuthorizationPolicyBuilder()
             .AddRequirements(new PermissionRequirement(policyName))
             .Build();

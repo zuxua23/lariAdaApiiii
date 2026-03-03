@@ -1,5 +1,5 @@
 ﻿using InventoryControl.DTO;
-using InventoryControl.Permission;
+using InventoryControl.PermissionHelper;
 using InventoryControl.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -19,7 +19,7 @@ public class UserApiController : ControllerBase
     }
 
     // READ
-    [Authorize(Policy = PermissionPoliciesProvider.UserView)]
+    [Authorize(Policy = "MASTER_USER_VIEW")]
     [HttpGet]
     public async Task<IActionResult> Get()
     {
@@ -27,7 +27,7 @@ public class UserApiController : ControllerBase
     }
 
     // READ BY ID
-    [Authorize(Policy = PermissionPoliciesProvider.UserView)]
+    [Authorize(Policy = "MASTER_USER_VIEW")]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(string id)
     {
@@ -39,7 +39,8 @@ public class UserApiController : ControllerBase
     }
 
     // CREATE
-    [Authorize(Policy = PermissionPoliciesProvider.MasterUserCreate)]
+    [Authorize(Policy = "MASTER_USER_CREATE")]
+
     [HttpPost]
     public async Task<IActionResult> Create(UserDto dto)
     {
@@ -49,7 +50,7 @@ public class UserApiController : ControllerBase
     }
 
     // UPDATE
-    [Authorize(Policy = PermissionPoliciesProvider.UserUpdate)]
+    [Authorize(Policy = "MASTER_USER_UPDATE")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(string id, UpdateUserDto dto)
     {
@@ -59,7 +60,7 @@ public class UserApiController : ControllerBase
     }
 
     // DELETE
-    [Authorize(Policy = PermissionPoliciesProvider.UserDelete)]
+    [Authorize(Policy = "MASTER_USER_DELETE")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {

@@ -1,4 +1,4 @@
-﻿namespace InventoryControl.Permission;
+﻿namespace InventoryControl.PermissionHelper;
 
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
@@ -13,7 +13,7 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
             .FindAll("permission")
             .Select(c => c.Value);
 
-        if (permissions.Contains(requirement.Permission))
+        if (permissions.Contains(requirement.PermissionReq))
         {
             context.Succeed(requirement);
         }

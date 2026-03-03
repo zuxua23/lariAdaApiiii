@@ -1,0 +1,46 @@
+﻿using InventoryControl.DTO;
+using InventoryControl.Entity;
+using InventoryControl.Service.Implementations;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace InventoryControl.Controllers;
+
+public class PrintTagRegisController: ControllerBase
+{
+    private readonly PrintTagRegisService _service;
+
+    public PrintTagRegisController(PrintTagRegisService service)
+    {
+        _service = service;
+    }
+
+    [Authorize(Policy = "PRINT_TAG")]
+    [HttpPost("print")]
+    public async Task<IActionResult> Print(PrintTagDto dto)
+    {
+        var user = User.Identity?.Name ?? "system";
+        var batch = await _service.PrintAsync(dto, user);
+
+        return Ok(new { message = "Print berhasil", batchNo = batch });
+    }
+
+    [Authorize(Policy = "TAG_REGISTER")]
+    [HttpPost("register")]
+    public async Task<IActionResult> Register(TagRegistrationDto dto)
+    {
+        var user = User.Identity?.Name ?? "system";
+
+        await _service.RegisterAsync(dto, user);
+
+        return Ok(new { message = "Tag berhasil di-standby-kan" });
+    }
+
+    [Authorize(Policy = "TAG_REGISTER")]
+    [HttpGet("print-history")]
+    public async Task<IActionResult> GetPrintHistory()
+    {
+        var data = await _service.GetAvailableTagsAsync();
+        return Ok(data);
+    }
+}

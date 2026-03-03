@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InventoryControl.Entity;
 
-[Table("tb_History")]
-public class History
+[Table("tb_History_Print")]
+public class HistoryPrint
 {
     [Key]
     [Column("id")]
@@ -36,6 +36,8 @@ public class History
 
     [Column("action")]
     public string Action { get; set; }
+    [Column("cycle_count")]
+    public int CycleCount { get; set; } = 0;
 
     public Item Item { get; set; }
     public Tag Tag { get; set; }

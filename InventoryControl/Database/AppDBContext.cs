@@ -29,7 +29,7 @@ public class AppDBContext : DbContext
     public DbSet<StockTaking> StockTakings { get; set; }
     public DbSet<StockTakingDetail> StockTakingDetails { get; set; }
 
-    public DbSet<History> Histories { get; set; }
+    public DbSet<HistoryPrint> Histories { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -85,7 +85,7 @@ public class AppDBContext : DbContext
         modelBuilder.Entity<Transaction_Detail>()
             .HasOne(td => td.Transaction)
             .WithMany(t => t.TransactionDetails)
-            .HasForeignKey(td => td.TransactionId)
+            .HasForeignKey(td => td.TrsId)
             .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<Transaction_Detail>()
@@ -99,6 +99,24 @@ public class AppDBContext : DbContext
             .WithMany(i => i.TransactionDetails)
             .HasForeignKey(td => td.ItemId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<StockTakingDetail>()
+            .HasOne(d => d.StockTaking)
+            .WithMany(h => h.Details)
+            .HasForeignKey(d => d.SttId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<StockTakingDetail>()
+            .HasOne(d => d.Tag)
+            .WithMany()
+            .HasForeignKey(d => d.TagId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<StockTakingDetail>()
+            .HasOne(d => d.Item)
+            .WithMany()
+            .HasForeignKey(d => d.ItemId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
 

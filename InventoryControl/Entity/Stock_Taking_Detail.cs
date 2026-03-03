@@ -8,13 +8,19 @@ public class StockTakingDetail
 {
     [Key]
     [Column("st_detail_id")]
-    public string StockTakingDetailId { get; set; }
+    public string StdId { get; set; }
 
-    [Column("st_id")]
-    public string StockTakingId { get; set; }
+    [Column("stt_id")]
+    public string SttId { get; set; }
 
     [Column("tag_id")]
     public string TagId { get; set; }
+
+    [Column("item_id")]
+    public string? ItemId { get; set; }
+
+    [Column("remark")]
+    public string? Remark { get; set; }
 
     [Column("action")]
     public string? Action { get; set; }
@@ -22,4 +28,5 @@ public class StockTakingDetail
     public StockTaking? StockTaking { get; set; }
 
     public Tag? Tag { get; set; }
+    public Item? Item { get; set; }
 }

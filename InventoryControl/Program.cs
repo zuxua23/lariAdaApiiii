@@ -1,7 +1,7 @@
 ﻿using InventoryControl.Database;
 using InventoryControl.Database.Seeder;
 using InventoryControl.Entity;
-using InventoryControl.Permission;
+using InventoryControl.PermissionHelper;
 using InventoryControl.Services.Implementations;
 using InventoryControl.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

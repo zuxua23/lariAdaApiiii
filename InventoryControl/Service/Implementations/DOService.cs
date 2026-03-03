@@ -1,6 +1,7 @@
 ﻿namespace InventoryControl.Service.Implementations;
 
 using InventoryControl.Database;
+using InventoryControl.DTO;
 using InventoryControl.Entity;
 using InventoryControl.Service.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -14,11 +15,27 @@ public class DOService : IDOService
         _db = db;
     }
 
-    public async Task<List<DO>> GetAllAsync()
+    public async Task<List<DOResponseDto>> GetAllAsync()
     {
         return await _db.DOs
             .Include(x => x.Details)
+            .ThenInclude(d => d.Item)
             .Where(x => !x.IsDelete)
+            .Select(x => new DOResponseDto
+            {
+                DoId = x.DoId,
+                DoNumber = x.DoNumber,
+                ScannerType = x.ScannerType,
+                Status = x.Status,
+                CreatedAt = x.CreatedAt,
+                Details = x.Details.Select(d => new DODetailResponseDto
+                {
+                    DoDetailId = d.DoDetailId,
+                    ItemId = d.ItemId,
+                    ItemName = d.Item.Name,
+                    QtyRequired = d.QtyRequired
+                }).ToList()
+            })
             .ToListAsync();
     }
 
@@ -29,21 +46,28 @@ public class DOService : IDOService
             .FirstOrDefaultAsync(x => x.DoId == id && !x.IsDelete);
     }
 
-    public async Task CreateAsync(DO dto, List<DODetail> details, string createdBy)
+    public async Task CreateAsync(DOCreateRequest request, string createdBy)
     {
-        dto.DoId = Guid.NewGuid().ToString();
-        dto.CreatedBy = createdBy;
-        dto.CreatedAt = DateTime.UtcNow;
-        dto.Status = "DRAFT";
-        dto.IsDelete = false;
-
-        foreach (var detail in details)
+        var doEntity = new DO
         {
-            detail.DoDetailId = Guid.NewGuid().ToString();
-            detail.DoId = dto.DoId;
-        }
+            DoId = Guid.NewGuid().ToString(),
+            DoNumber = request.DoNumber,
+            ScannerType = request.ScannerType,
+            Status = "DRAFT",
+            CreatedBy = createdBy,
+            CreatedAt = DateTime.UtcNow,
+            IsDelete = false
+        };
 
-        _db.DOs.Add(dto);
+        var details = request.Details.Select(d => new DODetail
+        {
+            DoDetailId = Guid.NewGuid().ToString(),
+            DoId = doEntity.DoId,
+            ItemId = d.ItemId,
+            QtyRequired = d.QtyRequired
+        }).ToList();
+
+        _db.DOs.Add(doEntity);
         _db.DODetails.AddRange(details);
 
         await _db.SaveChangesAsync();
@@ -57,6 +81,18 @@ public class DOService : IDOService
             throw new Exception("DO tidak ditemukan");
 
         doData.IsDelete = true;
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task UpdateStatusAsync(string id, string status)
+    {
+        var doEntity = await _db.DOs.FindAsync(id);
+
+        if (doEntity == null || doEntity.IsDelete)
+            throw new Exception("DO tidak ditemukan");
+
+        doEntity.Status = status;
+
         await _db.SaveChangesAsync();
     }
 }
