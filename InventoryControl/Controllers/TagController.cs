@@ -8,7 +8,7 @@ namespace InventoryControl.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("tag")]
+[Route("taghttt")]
 public class TagApiController : ControllerBase
 {
     private readonly ITagService _service;

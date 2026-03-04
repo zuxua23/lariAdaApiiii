@@ -31,6 +31,7 @@ public class PrintHistoryResponseDto
     public string TagId { get; set; } = null!;
     public string ItemId { get; set; } = null!;
     public string ItemName { get; set; } = null!;
+    public string LocId { get; set; } = null!;
     public string Status { get; set; } = null!;
     public string BatchNo { get; set; } = null!;
     public DateTime CreatedAt { get; set; }

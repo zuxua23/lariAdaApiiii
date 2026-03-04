@@ -1,16 +1,20 @@
 ﻿using InventoryControl.DTO;
 using InventoryControl.Entity;
 using InventoryControl.Service.Implementations;
+using InventoryControl.Service.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryControl.Controllers;
-
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[ApiController]
+[Route("tag")]
 public class PrintTagRegisController: ControllerBase
 {
-    private readonly PrintTagRegisService _service;
+    private readonly IPrintTagRegisService _service;
 
-    public PrintTagRegisController(PrintTagRegisService service)
+    public PrintTagRegisController(IPrintTagRegisService service)
     {
         _service = service;
     }

@@ -241,7 +241,7 @@ builder.Services.AddScoped<IStockPreparationService, StockPreparationService>();
 builder.Services.AddScoped<IReaderService, ReaderService>();
 builder.Services.AddScoped<IDOService, DOService>();
 builder.Services.AddScoped<IStockTakingService, StockTakingService>();
-
+builder.Services.AddScoped<IPrintTagRegisService, PrintTagRegisService>();
 
 #endregion
 
@@ -301,28 +301,6 @@ app.MapControllers();
 #endregion
 
 
-
-//using (var scope = app.Services.CreateScope())
-//{
-//    var db = scope.ServiceProvider.GetRequiredService<AppDBContext>();
-
-//    if (!db.Users.Any())
-//    {
-//        db.Users.Add(new User
-//        {
-//            Id = Guid.NewGuid().ToString(),
-//            UserId = "USR001",
-//            Fullname = "Administrator",
-//            Username = "admin",
-//            Password = BCrypt.Net.BCrypt.HashPassword("admin123"),
-//            CreatedAt = DateTime.Now,
-//            CreatedBy = "SYSTEM",
-//            IsDelete = 0
-//        });
-
-//        db.SaveChanges();
-//    }
-//}
 
 
 

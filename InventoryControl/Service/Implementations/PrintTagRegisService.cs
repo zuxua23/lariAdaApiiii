@@ -22,12 +22,35 @@ public class PrintTagRegisService : IPrintTagRegisService
 
         var batchNo = $"PRN-{DateTime.UtcNow:yyyyMMddHHmmss}";
 
+        var lastTag = await _db.Tags
+            .OrderByDescending(t => t.TagId)
+            .FirstOrDefaultAsync();
+
+        var lastHis = await _db.Histories
+            .OrderByDescending(t => t.HisId)
+            .FirstOrDefaultAsync();
+
+        int lastNumber = 0;
+
+        if (lastTag != null)
+            lastNumber = int.Parse(lastTag.TagId.Substring(3));
+
+        if (lastHis != null)
+            lastNumber = int.Parse(lastHis.TagId.Substring(3));
+
         for (int i = 0; i < dto.Qty; i++)
         {
+            lastNumber++;
+
+            var tagId = $"TAG{lastNumber:D3}";
+            var hisId = $"HIS{lastNumber:D3}";
+
             var tag = new Tag
             {
-                TagId = Guid.NewGuid().ToString(),
+                Id = Guid.NewGuid().ToString(),
+                TagId = tagId,
                 ItmId = dto.ItemId,
+                Curent_Location = "STAGING",
                 Status = "PRINTED",
                 CreatedBy = user,
                 CreatedAt = DateTime.UtcNow
@@ -37,8 +60,9 @@ public class PrintTagRegisService : IPrintTagRegisService
 
             _db.Histories.Add(new HistoryPrint
             {
-                HisId = Guid.NewGuid().ToString(),
-                TagId = tag.TagId,
+                Id = Guid.NewGuid().ToString(),
+                HisId = hisId,
+                TagId = tag.Id,   
                 ItmId = dto.ItemId,
                 Type = "PRINT",
                 Reference = batchNo,
@@ -54,7 +78,7 @@ public class PrintTagRegisService : IPrintTagRegisService
     }
 
 
-        public async Task RegisterAsync(TagRegistrationDto dto, string user)
+    public async Task RegisterAsync(TagRegistrationDto dto, string user)
         {
             if (!dto.TagIds.Any())
                 throw new Exception("Tag tidak boleh kosong");
