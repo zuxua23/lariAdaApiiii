@@ -117,6 +117,11 @@ public class AppDBContext : DbContext
             .WithMany()
             .HasForeignKey(d => d.ItemId)
             .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<HistoryPrint>()
+            .HasOne(h => h.Item)
+            .WithMany()
+            .HasForeignKey(h => h.ItemId)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }
 

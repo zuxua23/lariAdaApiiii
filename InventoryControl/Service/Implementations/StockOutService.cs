@@ -21,7 +21,7 @@ public class StockOutService : IStockOutService
 
         var doData = await _db.DOs
             .Include(d => d.Details)
-            .FirstOrDefaultAsync(d => d.DoId == dto.DoId && d.IsDelete == false);
+            .FirstOrDefaultAsync(d => d.DoId == dto.DoId && !d.IsDelete);
 
         if (doData == null)
             throw new Exception("DO tidak ditemukan");
@@ -46,18 +46,6 @@ public class StockOutService : IStockOutService
                 throw new Exception($"Qty item {doDetail.ItemId} belum terpenuhi");
         }
 
-        foreach (var detail in reservedDetails)
-        {
-            var tag = detail.Tag;
-
-            if (tag.Status != "RESERVED")
-                throw new Exception($"Tag {tag.TagId} tidak dalam status RESERVED");
-
-            tag.Status = "OUT";
-            tag.UpdatedBy = user;
-            tag.UpdatedAt = DateTime.UtcNow;
-        }
-
         var trxHeader = new Transaction
         {
             TrsId = Guid.NewGuid().ToString(),
@@ -70,8 +58,26 @@ public class StockOutService : IStockOutService
 
         _db.Transactions.Add(trxHeader);
 
+        var lastHistory = await _db.Histories
+            .OrderByDescending(x => x.HisId)
+            .FirstOrDefaultAsync();
+
+        int lastNumber = 0;
+
+        if (lastHistory != null)
+            lastNumber = int.Parse(lastHistory.HisId.Substring(3));
+
         foreach (var detail in reservedDetails)
         {
+            var tag = detail.Tag;
+
+            if (tag.Status != "RESERVED")
+                throw new Exception($"Tag {tag.TagId} tidak dalam status RESERVED");
+
+            tag.Status = "OUT";
+            tag.UpdatedBy = user;
+            tag.UpdatedAt = DateTime.UtcNow;
+
             _db.TransactionDetails.Add(new Transaction_Detail
             {
                 TrdId = Guid.NewGuid().ToString(),
@@ -80,11 +86,14 @@ public class StockOutService : IStockOutService
                 ItemId = detail.ItemId
             });
 
+            lastNumber++;
+
             _db.Histories.Add(new HistoryPrint
             {
-                HisId = Guid.NewGuid().ToString(),
+                Id = Guid.NewGuid().ToString(),
+                HisId = $"HIS{lastNumber:D5}",
                 TagId = detail.TagId,
-                ItmId = detail.ItemId,
+                ItemId = detail.ItemId,
                 Type = "STOCK_OUT",
                 Reference = dto.DoId,
                 Action = "OUT",

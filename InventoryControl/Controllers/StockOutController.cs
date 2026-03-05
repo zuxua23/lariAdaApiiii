@@ -19,7 +19,7 @@ public class StockOutController : ControllerBase
     }
 
     [Authorize(Policy = "TRANS_STOCK_OUT")]
-    [HttpPost("finalize")]
+    [HttpPost]
     public async Task<IActionResult> Finalize(StockOutDto dto)
     {
         var user = User.Identity?.Name ?? "system";

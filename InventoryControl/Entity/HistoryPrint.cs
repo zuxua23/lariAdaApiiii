@@ -16,7 +16,7 @@ public class HistoryPrint
 
     [Required]
     [Column("itm_id")]
-    public string ItmId { get; set; }
+    public string ItemId { get; set; }
 
     [Required]
     [Column("tag_id")]
@@ -24,6 +24,7 @@ public class HistoryPrint
 
     [Column("trs_type")]
     public string Type { get; set; }
+
     [Column("ref_no")]
     public string Reference { get; set; }
 

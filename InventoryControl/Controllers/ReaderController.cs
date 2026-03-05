@@ -29,6 +29,6 @@ public class ReaderApiController : ControllerBase
     {
         var user = User.Identity?.Name ?? "system";
         await _service.CreateAsync(dto, user);
-        return Ok();
+        return Ok(new { message = "Reader berhasil dibuat" });
     }
 }

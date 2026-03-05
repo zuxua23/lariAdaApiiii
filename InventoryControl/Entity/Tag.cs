@@ -19,7 +19,7 @@ public class Tag
 
     [Required]
     [Column("itm_id")]
-    public string ItmId { get; set; }
+    public string ItemId { get; set; }
 
     [Column("tag_epc")]
     public string EpcTag { get; set; }
@@ -30,7 +30,7 @@ public class Tag
 
     [Required]
     [Column("loc_id")]
-    public string Curent_Location { get; set; }
+    public string LocationId { get; set; }
 
     [Required]
     [Column("created_by")]

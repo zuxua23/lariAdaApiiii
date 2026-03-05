@@ -4,6 +4,7 @@ using InventoryControl.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InventoryControl.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20260305032043_FixTagItemRelation")]
+    partial class FixTagItemRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -116,8 +119,11 @@ namespace InventoryControl.Migrations
                         .HasColumnName("his_id");
 
                     b.Property<string>("ItemId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ItmId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("itm_id");
 
                     b.Property<string>("Reference")
@@ -308,10 +314,14 @@ namespace InventoryControl.Migrations
                         .HasColumnType("int")
                         .HasColumnName("isDelete");
 
-                    b.Property<string>("LocationId")
+                    b.Property<string>("Location")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("loc_id");
+
+                    b.Property<string>("LocationNavigationId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -333,7 +343,7 @@ namespace InventoryControl.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LocationId");
+                    b.HasIndex("LocationNavigationId");
 
                     b.ToTable("tb_Reader");
                 });
@@ -736,9 +746,7 @@ namespace InventoryControl.Migrations
                 {
                     b.HasOne("InventoryControl.Entity.Item", "Item")
                         .WithMany()
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .HasForeignKey("ItemId");
 
                     b.HasOne("InventoryControl.Entity.Tag", "Tag")
                         .WithMany()
@@ -755,7 +763,7 @@ namespace InventoryControl.Migrations
                 {
                     b.HasOne("InventoryControl.Entity.Location", "LocationNavigation")
                         .WithMany()
-                        .HasForeignKey("LocationId")
+                        .HasForeignKey("LocationNavigationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

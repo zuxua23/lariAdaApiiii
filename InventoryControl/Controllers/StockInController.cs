@@ -8,7 +8,7 @@ namespace InventoryControl.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("stock")]
+[Route("stock/in")]
 public class StockApiController : ControllerBase
 {
     private readonly IStockInService _service;
@@ -19,7 +19,7 @@ public class StockApiController : ControllerBase
     }
 
     [Authorize(Policy = "TRANS_STOCK_IN")]
-    [HttpPost("stock-in")]
+    [HttpPost]
     public async Task<IActionResult> StockIn(StockInDto dto)
     {
         var user = User.Identity?.Name ?? "system";

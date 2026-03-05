@@ -16,7 +16,7 @@ public class Reader
 
     [Required]
     [Column("loc_id")]
-    public string Location { get; set; }
+    public string LocationId { get; set; }
 
     [Required]
     [Column("rdr_name")]

@@ -232,7 +232,6 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IItemService, ItemService>();
 builder.Services.AddScoped<IReaderService, ReaderService>();
-builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IStockInService, StockInService>();

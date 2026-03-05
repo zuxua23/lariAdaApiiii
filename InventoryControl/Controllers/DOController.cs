@@ -19,12 +19,12 @@ public class DOApiController : ControllerBase
         _service = service;
     }
 
-    [Authorize(Policy = "TRANS_DO_VIEW")]
+    [Authorize(Policy = "MASTER_DO_VIEW")]
     [HttpGet]
     public async Task<IActionResult> Get()
         => Ok(await _service.GetAllAsync());
 
-    [Authorize(Policy = "TRANS_DO_CREATE")]
+    [Authorize(Policy = "MASTER_DO_CREATE")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] DOCreateRequest request)
     {

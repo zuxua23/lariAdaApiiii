@@ -15,69 +15,45 @@ public class StockInService : IStockInService
         _db = db;
     }
 
-    //public async Task StockInAsync(StockInRequestDto dto, string user)
-    //{
-    //    var reader = await _db.Readers
-    //        .FirstOrDefaultAsync(r => r.RdrId == dto.ReaderId);
-
-    //    if (reader == null)
-    //        throw new Exception("Reader tidak ditemukan");
-
-    //    var tag = await _db.Tags
-    //        .FirstOrDefaultAsync(t => t.EpcTag == dto.EpcTag);
-
-    //    if (tag == null)
-    //        throw new Exception("Tag tidak ditemukan");
-
-    //    if (tag.Status == "IN_STOCK")
-    //        throw new Exception("Tag sudah di stock");
-
-    //    if (tag.Status == "OUT")
-    //        throw new Exception("Tag sudah keluar");
-
-    //    tag.Status = "IN_STOCK";
-    //    tag.Curent_Location = reader.Location;
-    //    tag.UpdatedBy = user;
-    //    tag.UpdatedAt = DateTime.UtcNow;
-
-    //    var transaction = new Transaction
-    //    {
-    //        TrsId = Guid.NewGuid().ToString(),
-    //        TrsType = "STOCK_IN",
-    //        ReferenceId = tag.TagId,
-    //        RdrId = reader.RdrId,
-    //        CreatedBy = user,
-    //        CreatedAt = DateTime.UtcNow
-    //    };
-
-    //    _db.Transactions.Add(transaction);
-
-    //    await _db.SaveChangesAsync();
-    //}
-
     public async Task StockInAsync(StockInDto dto, string user)
     {
         using var trx = await _db.Database.BeginTransactionAsync();
+        var lastNumber = await _db.Tags.CountAsync();
 
-        if (!dto.SelectedTagIds.Any())
-            throw new Exception("Tidak ada tag yang dipilih");
+        if (!dto.ScannedCodes.Any())
+            throw new Exception("Tidak ada tag yang discan");
 
-        var selected = dto.SelectedTagIds.OrderBy(x => x);
-        var scanned = dto.ScannedTagIds.OrderBy(x => x);
+        List<Tag> tags;
 
-        if (!selected.SequenceEqual(scanned))
-            throw new Exception("Semua tag harus discan sebelum save");
+        if (dto.ScannerType == "RFID")
+        {
+            tags = await _db.Tags
+                .Where(t => dto.ScannedCodes.Contains(t.EpcTag))
+                .ToListAsync();
+        }
+        else
+        {
+            tags = await _db.Tags
+                .Where(t => dto.ScannedCodes.Contains(t.TagId))
+                .ToListAsync();
+        }
 
-        var tags = await _db.Tags
-            .Where(t => dto.SelectedTagIds.Contains(t.TagId))
-            .ToListAsync();
+        if (!tags.Any())
+            throw new Exception("Tag tidak ditemukan");
+
+        var warehouseLocation = await _db.Locations
+        .FirstOrDefaultAsync(x => x.LocId == "WAREHOUSE");
+
+        if (warehouseLocation == null)
+            throw new Exception("Location WAREHOUSE tidak ditemukan");
 
         foreach (var tag in tags)
         {
-            if (tag.Status != "STANDBY")
-                throw new Exception($"Tag {tag.TagId} tidak dalam status STANDBY");
+            if (tag.Status != "STANDBY" && tag.Status != "PRINTED")
+                throw new Exception($"Tag {tag.TagId} tidak bisa di Stock In");
 
             tag.Status = "IN_STOCK";
+            tag.LocationId = warehouseLocation.Id;
             tag.UpdatedBy = user;
             tag.UpdatedAt = DateTime.UtcNow;
         }
@@ -86,7 +62,6 @@ public class StockInService : IStockInService
         {
             TrsId = Guid.NewGuid().ToString(),
             TrsType = "STOCK_IN",
-            RdrId = dto.ReaderId,
             CreatedBy = user,
             CreatedAt = DateTime.UtcNow
         };
@@ -95,22 +70,26 @@ public class StockInService : IStockInService
 
         foreach (var tag in tags)
         {
+            lastNumber++;
+            var hisId = $"HIS{lastNumber:D5}";
+
             _db.TransactionDetails.Add(new Transaction_Detail
             {
                 TrdId = Guid.NewGuid().ToString(),
                 TrsId = trxHeader.TrsId,
-                TagId = tag.TagId,
-                ItemId = tag.ItmId
+                TagId = tag.Id,
+                ItemId = tag.ItemId
             });
 
             _db.Histories.Add(new HistoryPrint
             {
-                HisId = Guid.NewGuid().ToString(),
-                TagId = tag.TagId,
-                ItmId = tag.ItmId,
+                Id = Guid.NewGuid().ToString(),
+                HisId = hisId,
+                TagId = tag.Id,
+                ItemId = tag.ItemId,
                 Type = "STOCK_IN",
                 Reference = trxHeader.TrsId,
-                Action = "IN_STOCK",
+                Action = "MOVE_TO_WAREHOUSE",
                 CreatedBy = user,
                 CreatedAt = DateTime.UtcNow
             });
@@ -119,4 +98,70 @@ public class StockInService : IStockInService
         await _db.SaveChangesAsync();
         await trx.CommitAsync();
     }
+
+
+    //public async Task StockInAsync(StockInDto dto, string user)
+    //{
+    //    using var trx = await _db.Database.BeginTransactionAsync();
+
+    //    if (!dto.SelectedTagIds.Any())
+    //        throw new Exception("Tidak ada tag yang dipilih");
+
+    //    var selected = dto.SelectedTagIds.OrderBy(x => x);
+    //    var scanned = dto.ScannedTagIds.OrderBy(x => x);
+
+    //    if (!selected.SequenceEqual(scanned))
+    //        throw new Exception("Semua tag harus discan sebelum save");
+
+    //    var tags = await _db.Tags
+    //        .Where(t => dto.SelectedTagIds.Contains(t.TagId))
+    //        .ToListAsync();
+
+    //    foreach (var tag in tags)
+    //    {
+    //        if (tag.Status != "STANDBY")
+    //            throw new Exception($"Tag {tag.TagId} tidak dalam status STANDBY");
+
+    //        tag.Status = "IN_STOCK";
+    //        tag.UpdatedBy = user;
+    //        tag.UpdatedAt = DateTime.UtcNow;
+    //    }
+
+    //    var trxHeader = new Transaction
+    //    {
+    //        TrsId = Guid.NewGuid().ToString(),
+    //        TrsType = "STOCK_IN",
+    //        //RdrId = dto.ReaderId,
+    //        CreatedBy = user,
+    //        CreatedAt = DateTime.UtcNow
+    //    };
+
+    //    _db.Transactions.Add(trxHeader);
+
+    //    foreach (var tag in tags)
+    //    {
+    //        _db.TransactionDetails.Add(new Transaction_Detail
+    //        {
+    //            TrdId = Guid.NewGuid().ToString(),
+    //            TrsId = trxHeader.TrsId,
+    //            TagId = tag.TagId,
+    //            ItemId = tag.ItemId
+    //        });
+
+    //        _db.Histories.Add(new HistoryPrint
+    //        {
+    //            HisId = Guid.NewGuid().ToString(),
+    //            TagId = tag.TagId,
+    //            ItemId = tag.ItemId,
+    //            Type = "STOCK_IN",
+    //            Reference = trxHeader.TrsId,
+    //            Action = "IN_STOCK",
+    //            CreatedBy = user,
+    //            CreatedAt = DateTime.UtcNow
+    //        });
+    //    }
+
+    //    await _db.SaveChangesAsync();
+    //    await trx.CommitAsync();
+    //}
 }
