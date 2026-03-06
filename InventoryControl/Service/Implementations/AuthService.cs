@@ -24,7 +24,6 @@ namespace InventoryControl.Services.Implementations
             _redis = redis;
         }
 
-        // LOGIN API (mengembalikan token)
         public async Task<string> LoginAsync(LoginDTO dto)
         {
             try
@@ -43,14 +42,12 @@ namespace InventoryControl.Services.Implementations
                     DailyFileLogger.Warn($"LoginAsync gagal: Password salah untuk Username '{dto.Username}'.");
                     throw new Exception("Invalid password");
                 }
-                // Roles (1 query)
                 var roles = await _db.UserRoles
                     .Where(ur => ur.UserId == user.Id)
                     .Select(ur => ur.Role.Code)
                     .Distinct()
                     .ToListAsync();
 
-                // Permissions (1 query JOIN)
                 var permissions = await (
                     from ur in _db.UserRoles
                     join rp in _db.RolePermissions on ur.RoleId equals rp.RoleId
@@ -74,7 +71,6 @@ namespace InventoryControl.Services.Implementations
             }
         }
 
-        // LOGIN WEB (mengembalikan User object)
         public async Task<User> LoginWebAsync(LoginDTO dto)
         {
             try
@@ -104,7 +100,6 @@ namespace InventoryControl.Services.Implementations
             }
         }
 
-        // LOGOUT
         public async Task LogoutAsync(string userId)
         {
             try

@@ -18,15 +18,42 @@ public class LocationService : ILocationService
 
     public async Task<List<Location>> GetAllAsync()
     {
-        return await _db.Locations
-            .Where(x => !x.IsDelete)
-            .ToListAsync();
+        try
+        {
+            var result = await _db.Locations
+                .Where(x => !x.IsDelete)
+                .ToListAsync();
+
+            DailyFileLogger.Info($"GetAllAsync berhasil. Total Location: {result.Count}");
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            DailyFileLogger.Error("Error di GetAllAsync Location.", ex);
+            throw;
+        }
     }
 
     public async Task<Location?> GetByIdAsync(string id)
     {
-        return await _db.Locations
-            .FirstOrDefaultAsync(x => x.Id == id && !x.IsDelete);
+        try
+        {
+            var location = await _db.Locations
+                .FirstOrDefaultAsync(x => x.Id == id && !x.IsDelete);
+
+            if (location == null)
+                DailyFileLogger.Warn($"GetByIdAsync: Location dengan ID {id} tidak ditemukan.");
+            else
+                DailyFileLogger.Info($"GetByIdAsync berhasil untuk ID {id}.");
+
+            return location;
+        }
+        catch (Exception ex)
+        {
+            DailyFileLogger.Error($"Error di GetByIdAsync untuk ID {id}.", ex);
+            throw;
+        }
     }
 
     public async Task CreateAsync(LocationDTO dto, string createdBy)

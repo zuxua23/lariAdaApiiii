@@ -3,6 +3,7 @@ using InventoryControl.DTO;
 using InventoryControl.Entity;
 using InventoryControl.Helpers;
 using InventoryControl.Service.Interfaces;
+using InventoryControl.Utility;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Sockets;
 using System.Text;
@@ -20,84 +21,104 @@ public class PrintTagRegisService : IPrintTagRegisService
 
     public async Task<string> PrintAsync(PrintTagDto dto, string user)
     {
-        if (dto.Qty <= 0)
-            throw new Exception("Qty harus lebih dari 0");
-
-        var batchNo = $"PRN-{DateTime.UtcNow:yyyyMMddHHmmss}";
-
-        var item = await _db.Items.FirstOrDefaultAsync(x => x.Id == dto.ItemId);
-
-        if (item == null)
-            throw new Exception("Item tidak ditemukan");
-
-        var printerName = "SATO CL4NX Plus (SmaPri)";
-
-        var lastTag = await _db.Tags
-            .OrderByDescending(t => t.TagId)
-            .FirstOrDefaultAsync();
-
-        var lastNumber = await _db.Tags.CountAsync();
-
-        if (lastTag != null)
-            lastNumber = int.Parse(lastTag.TagId.Substring(3));
-
-        for (int i = 0; i < dto.Qty; i++)
+        try
         {
-
-            var tagId = $"TAG{lastNumber:D5}";
-
-            var epc = $"A{item.ItmId}{lastNumber:D10}";
-
-            var location = await _db.Locations
-            .FirstOrDefaultAsync(x => x.LocId == "STAGING");
-
-            if (location == null)
-                throw new Exception("Location STAGING tidak ditemukan");
-
-            var tag = new Tag
+            if (dto.Qty <= 0)
             {
-                Id = Guid.NewGuid().ToString(),
-                TagId = tagId,
-                EpcTag = epc,
-                ItemId = dto.ItemId,
-                LocationId= location.Id,
-                Status = "PRINTED",
-                CreatedBy = user,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _db.Tags.Add(tag);
-            await _db.SaveChangesAsync();
-
-
-            _db.Histories.Add(new HistoryPrint
-            {
-                Id = Guid.NewGuid().ToString(),
-                TagId = tag.Id,
-                ItemId = dto.ItemId,
-                Type = "PRINT",
-                Reference = batchNo,
-                Action = "CREATE",
-                CreatedBy = user,
-                CreatedAt = DateTime.UtcNow
-            });
-
-            // QR code data
-            var qr = tagId;
-
-            var sbpl = BuildSBPL(epc, item.Name, dto.Qty, qr);
-
-            bool printed = PrinterHelper.SendStringToPrinter(printerName, sbpl);
-            Console.WriteLine(sbpl);
-            if (!printed)
-            {
-                throw new Exception("Gagal mengirim data ke printer SATO");
+                DailyFileLogger.Warn("PrintAsync gagal: Qty <= 0");
+                throw new Exception("Qty harus lebih dari 0");
             }
+
+            var batchNo = $"PRN-{DateTime.UtcNow:yyyyMMddHHmmss}";
+
+            var item = await _db.Items.FirstOrDefaultAsync(x => x.Id == dto.ItemId);
+
+            if (item == null)
+            {
+                DailyFileLogger.Warn($"PrintAsync gagal: Item {dto.ItemId} tidak ditemukan");
+                throw new Exception("Item tidak ditemukan");
+            }
+
+            var printerName = "SATO CL4NX Plus (SmaPri)";
+
+            var lastTag = await _db.Tags
+                .OrderByDescending(t => t.TagId)
+                .FirstOrDefaultAsync();
+
+            var lastNumber = await _db.Tags.CountAsync();
+
+            if (lastTag != null)
+                lastNumber = int.Parse(lastTag.TagId.Substring(3));
+
+            for (int i = 0; i < dto.Qty; i++)
+            {
+
+                var tagId = $"TAG{lastNumber:D5}";
+
+                var epc = $"A{item.ItmId}{lastNumber:D10}";
+
+                var location = await _db.Locations
+                .FirstOrDefaultAsync(x => x.LocId == "STAGING");
+
+                if (location == null)
+                {
+                    DailyFileLogger.Warn("PrintAsync gagal: Location STAGING tidak ditemukan");
+                    throw new Exception("Location STAGING tidak ditemukan");
+                }
+
+                var tag = new Tag
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    TagId = tagId,
+                    EpcTag = epc,
+                    ItemId = dto.ItemId,
+                    LocationId = location.Id,
+                    Status = "PRINTED",
+                    CreatedBy = user,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _db.Tags.Add(tag);
+                await _db.SaveChangesAsync();
+
+
+                _db.Histories.Add(new HistoryPrint
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    TagId = tag.Id,
+                    ItemId = dto.ItemId,
+                    Type = "PRINT",
+                    Reference = batchNo,
+                    Action = "CREATE",
+                    CreatedBy = user,
+                    CreatedAt = DateTime.UtcNow
+                });
+
+                // QR code data
+                var qr = tagId;
+
+                var sbpl = BuildSBPL(epc, item.Name, dto.Qty, qr);
+
+                bool printed = PrinterHelper.SendStringToPrinter(printerName, sbpl);
+                Console.WriteLine(sbpl);
+                if (!printed)
+                {
+                    DailyFileLogger.Error($"PrintAsync gagal kirim ke printer. Tag: {tagId}", null);
+                    throw new Exception("Gagal mengirim data ke printer SATO");
+                }
+
+                DailyFileLogger.Info($"Tag berhasil dibuat dan dikirim ke printer. TagId: {tagId}");
+            }
+
+            await _db.SaveChangesAsync();
+            DailyFileLogger.Info($"PrintAsync berhasil. BatchNo: {batchNo}");
+            return batchNo;
         }
-
-        await _db.SaveChangesAsync();
-
-        return batchNo;
+        catch (Exception ex)
+        {
+            DailyFileLogger.Error("Error di PrintAsync.", ex);
+            throw;
+        }
     }
 
     private string BuildSBPL(string epc, string itemName, int qty, string qr)
@@ -127,29 +148,43 @@ public class PrintTagRegisService : IPrintTagRegisService
 
 
     public async Task RegisterAsync(TagRegistrationDto dto, string user)
+    {
+        try
         {
             if (!dto.TagIds.Any())
+            {
+                DailyFileLogger.Warn("RegisterAsync gagal: TagIds kosong");
                 throw new Exception("Tag tidak boleh kosong");
+            }
 
             var tags = await _db.Tags
                 .Where(t => dto.TagIds.Contains(t.TagId))
                 .ToListAsync();
-        if(!tags.Any())
-            throw new Exception("Tag tidak ditemukan");
 
-        var foundTagIds = tags.Select(t => t.TagId).ToHashSet();
-        var missingTags = dto.TagIds.Where(id => !foundTagIds.Contains(id)).ToList();
+            if (!tags.Any())
+            {
+                DailyFileLogger.Warn("RegisterAsync gagal: Tag tidak ditemukan");
+                throw new Exception("Tag tidak ditemukan");
+            }
 
-        if (missingTags.Any())
-            throw new Exception($"Tag tidak ditemukan: {string.Join(",", missingTags)}");
+            var foundTagIds = tags.Select(t => t.TagId).ToHashSet();
+            var missingTags = dto.TagIds.Where(id => !foundTagIds.Contains(id)).ToList();
 
-        var reference = $"REG-{DateTime.UtcNow:yyyyMMddHHmmss}";
+            if (missingTags.Any())
+            {
+                DailyFileLogger.Warn($"RegisterAsync gagal: Tag tidak ditemukan {string.Join(",", missingTags)}");
+                throw new Exception($"Tag tidak ditemukan: {string.Join(",", missingTags)}");
+            }
+            var reference = $"REG-{DateTime.UtcNow:yyyyMMddHHmmss}";
 
 
-        foreach (var tag in tags)
+            foreach (var tag in tags)
             {
                 if (tag.Status != "PRINTED" && tag.Status != "OUT")
+                {
+                    DailyFileLogger.Warn($"RegisterAsync gagal: Tag {tag.TagId} status tidak valid");
                     throw new Exception($"Tag {tag.TagId} tidak bisa diregister");
+                }
 
                 tag.Status = "STANDBY";
                 tag.UpdatedBy = user;
@@ -166,13 +201,24 @@ public class PrintTagRegisService : IPrintTagRegisService
                     CreatedBy = user,
                     CreatedAt = DateTime.UtcNow
                 });
+                DailyFileLogger.Info($"Tag {tag.TagId} berhasil diregister.");
             }
 
             await _db.SaveChangesAsync();
+
+            DailyFileLogger.Info($"RegisterAsync berhasil. Reference: {reference}");
         }
+        catch (Exception ex)
+        {
+            DailyFileLogger.Error("Error di RegisterAsync.", ex);
+            throw;
+        }
+    }
 
     public async Task<List<PrintHistoryResponseDto>> GetAvailableTagsAsync()
     {
+        try
+        {
         var result = await _db.Tags
             .Where(t => t.Status == "PRINTED" || t.Status == "OUT")
             .Join(_db.Items,
@@ -193,7 +239,14 @@ public class PrintTagRegisService : IPrintTagRegisService
                 })
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
+        DailyFileLogger.Info($"GetAvailableTagsAsync berhasil. Total data: {result.Count}");
 
         return result;
+    }
+        catch (Exception ex)
+        {
+            DailyFileLogger.Error("Error di GetAvailableTagsAsync.", ex);
+            throw;
+        }
     }
 }

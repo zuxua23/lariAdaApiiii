@@ -16,7 +16,6 @@ public class ItemService : IItemService
         _db = db;
     }
 
-    // READ ALL
     public async Task<List<ItemResponseDto>> GetAllAsync()
     {
         try
@@ -41,7 +40,6 @@ public class ItemService : IItemService
         }
     }
 
-    // READ BY ID
     public async Task<ItemResponseDto?> GetByIdAsync(string id)
     {
         try
@@ -70,7 +68,6 @@ public class ItemService : IItemService
         }
     }
 
-    // CREATE
     public async Task CreateAsync(ItemDto dto, string createdBy)
     {
         try
@@ -103,7 +100,6 @@ public class ItemService : IItemService
         }
     }
 
-    // UPDATE
     public async Task UpdateAsync(string id, ItemDto dto, string updatedBy)
     {
         try
@@ -128,7 +124,6 @@ public class ItemService : IItemService
         }
     }
 
-    // DELETE (SOFT DELETE)
     public async Task DeleteAsync(string id)
     {
         try

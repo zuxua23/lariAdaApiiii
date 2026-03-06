@@ -22,7 +22,9 @@ public class DOApiController : ControllerBase
     [Authorize(Policy = "MASTER_DO_VIEW")]
     [HttpGet]
     public async Task<IActionResult> Get()
-        => Ok(await _service.GetAllAsync());
+    {
+        return Ok(await _service.GetAllAsync());
+    }
 
     [Authorize(Policy = "MASTER_DO_CREATE")]
     [HttpPost]
@@ -43,7 +45,7 @@ public class DOApiController : ControllerBase
     public async Task<IActionResult> Delete(string id)
     {
         await _service.DeleteAsync(id);
-        return Ok();
+        return Ok(new { message = "User berhasil dihapus" });
     }
 
     [Authorize(Policy = "TRANS_DO_UPDATE_STATUS")]

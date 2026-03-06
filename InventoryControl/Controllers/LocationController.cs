@@ -23,7 +23,9 @@ public class LocationApiController : ControllerBase
     [Authorize(Policy = "MASTER_LOCATION_VIEW")]
     [HttpGet]
     public async Task<IActionResult> Get()
-        => Ok(await _service.GetAllAsync());
+    {
+        return Ok(await _service.GetAllAsync());    
+    }
 
     [Authorize(Policy = "MASTER_LOCATION_CREATE")]
     [HttpPost]
