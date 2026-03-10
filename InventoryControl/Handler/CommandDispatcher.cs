@@ -1,25 +1,26 @@
-﻿using InventoryControl.Models;
+﻿using InventoryControl.DTO;
+using InventoryControl.Models;
 
 namespace InventoryControl.Handler;
-
 public class CommandDispatcher
 {
-    private readonly UserHandler _userHandler;
-    public CommandDispatcher(UserHandler userHandler)
+    private readonly IEnumerable<ICommandHandler> _handlers;
+
+    public CommandDispatcher(IEnumerable<ICommandHandler> handlers)
     {
-        _userHandler = userHandler;
+        _handlers = handlers;
     }
 
-    public async Task DispatchAsync(string command, EventMessage<object> message)
+    public async Task DispatchAsync(Message message)
     {
-        switch (message.Service.ToLower())
-        {
-            case "user":
-                await _userHandler.HandleAsync(message);
-                break;
 
-            default:
-                throw new Exception($"Service handler not found for {message.Service}");
-        }
+        var handler = _handlers.FirstOrDefault(h =>
+            h.TrxType.Equals(message.TrxType, StringComparison.OrdinalIgnoreCase));
+        Console.WriteLine($"Dispatching {message.TrxType} -> {message.Action}");
+        Console.WriteLine($"Handlers count: {_handlers.Count()}");
+        if (handler == null)
+            throw new Exception($"Handler not found for {message.TrxType}");
+
+        await handler.HandleAsync(message.Action, message.Data);
     }
 }

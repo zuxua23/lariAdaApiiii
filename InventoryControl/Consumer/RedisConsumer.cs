@@ -40,23 +40,34 @@ public class RedisConsumer : BackgroundService
 
             foreach (var entry in entries)
             {
-                var json = entry.Values.First().Value;
+                var json = entry.Values
+                    .FirstOrDefault(v => v.Name == "data")
+                    .Value;
 
-                var message = JsonSerializer.Deserialize<EventMessage<object>>(json);
+                if (json.IsNullOrEmpty)
+                {
+                    Console.WriteLine("Invalid message format");
+                    continue;
+                }
 
+                var message = JsonSerializer.Deserialize<Message>(json);
+                Console.WriteLine($"TrxType: {message.TrxType}");
+                Console.WriteLine($"Action: {message.Action}");
                 try
                 {
                     using var scope = _scopeFactory.CreateScope();
 
                     var dispatcher = scope.ServiceProvider.GetRequiredService<CommandDispatcher>();
 
-                    await dispatcher.DispatchAsync(message.Command, message);
+                    await dispatcher.DispatchAsync(message);
+                    Console.WriteLine($"Message: {message}");
 
                     await db.StreamAcknowledgeAsync(STREAM, GROUP, entry.Id);
                 }
                 catch (Exception ex)
                 {
                     DailyFileLogger.Error($"Error processing message: {ex.Message}");
+                    Console.WriteLine(ex);
                     await HandleRetry(db, message);
 
                 }
@@ -78,37 +89,45 @@ public class RedisConsumer : BackgroundService
         {
         }
     }
-    private async Task HandleRetry(IDatabase db, EventMessage<object> message)
-{
-    const int MAX_RETRY = 3;
-
-    if (message.RetryCount < MAX_RETRY)
+    private async Task HandleRetry(IDatabase db, Message message)
     {
-        message.RetryCount++;
+        const int MAX_RETRY = 3;
 
-        var json = JsonSerializer.Serialize(message);
+        if (message.RetryCount < MAX_RETRY)
+        {
+            message.RetryCount++;
 
-        await db.StreamAddAsync(
-            STREAM,
-            new NameValueEntry[]
+            var retryMessage = new Message
             {
+                TrxType = message.TrxType,
+                Action = message.Action,
+                Data = message.Data.Clone(),
+                RetryCount = message.RetryCount
+            };
+
+            var json = JsonSerializer.Serialize(retryMessage);
+
+            await db.StreamAddAsync(
+                STREAM,
+                new NameValueEntry[]
+                {
                 new NameValueEntry("data", json)
-            });
+                });
 
-        Console.WriteLine($"Retry {message.RetryCount}");
-    }
-    else
-    {
-        var json = JsonSerializer.Serialize(message);
+            Console.WriteLine($"Retry {message.RetryCount}");
+        }
+        else
+        {
+            var json = JsonSerializer.Serialize(message);
 
-        await db.StreamAddAsync(
-            STREAM + ":dlq",
-            new NameValueEntry[]
-            {
+            await db.StreamAddAsync(
+                STREAM + ":dlq",
+                new NameValueEntry[]
+                {
                 new NameValueEntry("data", json)
-            });
+                });
 
-        Console.WriteLine("Moved to Dead Letter Queue");
+            Console.WriteLine("Moved to Dead Letter Queue");
+        }
     }
-}
 }

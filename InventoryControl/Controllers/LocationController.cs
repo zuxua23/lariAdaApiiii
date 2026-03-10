@@ -31,7 +31,7 @@ public class LocationApiController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(LocationDTO dto)
     {
-        var createdBy = User.FindFirst(ClaimTypes.Name)?.Value ?? "system";
+        var createdBy = Request.Headers["X-User-Id"].FirstOrDefault() ?? "system";
 
         await _service.CreateAsync(dto, createdBy);
         return Ok(new { message = "Location berhasil dibuat" });
@@ -41,8 +41,8 @@ public class LocationApiController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(string id, LocationDTO dto)
     {
-        var createdBy = User.FindFirst(ClaimTypes.Name)?.Value ?? "system";
-        await _service.UpdateAsync(id, dto, createdBy);
+        var updatedBy = Request.Headers["X-User-Id"].FirstOrDefault() ?? "system";
+        await _service.UpdateAsync(id, dto, updatedBy);
         return Ok(new { message = "Location berhasil diubah" });
     }
 

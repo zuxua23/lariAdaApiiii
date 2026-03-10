@@ -1,5 +1,5 @@
 ﻿using InventoryControl.DTO;
-using InventoryControl.PermissionHelper;
+//using InventoryControl.PermissionHelper;
 using InventoryControl.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 [ApiController]
-[Route("core/user")]
+[Route("user")]
 public class UserApiController : ControllerBase
 {
     private readonly IUserService _service;
@@ -37,8 +37,8 @@ public class UserApiController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(UserDto dto)
     {
-        var createdBy = User.FindFirst(ClaimTypes.Name)?.Value ?? "system";
-
+        var createdBy = Request.Headers["X-User-Id"].FirstOrDefault() ?? "system";
+        Console.WriteLine("User Header: " + Request.Headers["X-User-Id"]);
         await _service.CreateAsync(dto, createdBy);
         return Ok(new { message = "User berhasil dibuat" });
     }
@@ -46,7 +46,8 @@ public class UserApiController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(string id, UpdateUserDto dto)
     {
-        var updatedBy = User.FindFirst(ClaimTypes.Name)?.Value ?? "system";
+        var updatedBy = Request.Headers["X-User-Id"].FirstOrDefault() ?? "system";
+        Console.WriteLine("User Header: " + Request.Headers["X-User-Id"]);
         await _service.UpdateAsync(id, dto, updatedBy);
         return Ok(new { message = "User berhasil diperbarui" });
     }

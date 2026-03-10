@@ -51,10 +51,10 @@ public class SeedAccess
     ("TRANS_STOCK_TAKING_REMOVE", "Remove Stock Taking", "PER019"),
     ("TRANS_STOCK_TAKING_FINALIZE", "Finalize Stock Taking", "PER020"),
 
-                ("MASTER_USER_VIEW", "View Master User","PER021"),
-            ("MASTER_USER_CREATE", "Create Master User", "PER022"),
-            ("MASTER_USER_UPDATE", "Update Master User", "PER023"),
-            ("MASTER_USER_DELETE", "Delete Master User", "PER024"),
+                ("USER_GET", "View Master User","PER021"),
+            ("USER_CREATE", "Create Master User", "PER022"),
+            ("USER_UPDATE", "Update Master User", "PER023"),
+            ("USER_DELETE", "Delete Master User", "PER024"),
 };
         foreach (var (code, name, perid) in permissionSeeds)
         {

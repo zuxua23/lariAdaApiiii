@@ -1,13 +1,13 @@
-﻿namespace InventoryControl.PermissionHelper;
+﻿//namespace InventoryControl.PermissionHelper;
 
-using Microsoft.AspNetCore.Authorization;
+//using Microsoft.AspNetCore.Authorization;
 
-public class PermissionRequirement : IAuthorizationRequirement
-{
-    public string PermissionReq { get; }
+//public class PermissionRequirement : IAuthorizationRequirement
+//{
+//    public string PermissionReq { get; }
 
-    public PermissionRequirement(string permission)
-    {
-        PermissionReq = permission;
-    }
-}
+//    public PermissionRequirement(string permission)
+//    {
+//        PermissionReq = permission;
+//    }
+//}

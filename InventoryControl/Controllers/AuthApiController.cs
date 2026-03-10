@@ -26,22 +26,6 @@ public class AuthApiController : ControllerBase
         return Ok(result);
     }
 
-
-    //[Authorize]
-    //[HttpPost("logout")]
-    //public async Task<IActionResult> Logout()
-    //{
-    //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-    //    if (string.IsNullOrWhiteSpace(userId))
-    //    {
-    //        return Unauthorized(new { message = "User tidak valid" });
-    //    }
-
-    //    await _authService.LogoutAsync(userId);
-
-    //    return Ok(new { message = "Logout berhasil" });
-    //}
 }
     
 

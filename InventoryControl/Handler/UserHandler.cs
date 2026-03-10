@@ -2,59 +2,74 @@
 using InventoryControl.Models;
 using System.Text.Json;
 
-namespace InventoryControl.Handler;
-
-public class UserHandler 
+namespace InventoryControl.Handler; 
+public class UserHandler : ICommandHandler
 {
     private readonly IUserService _service;
+
+    private readonly Dictionary<string, Func<JsonElement, Task>> _actions;
 
     public UserHandler(IUserService service)
     {
         _service = service;
-    }
 
-    public async Task HandleAsync(EventMessage<object> message)
-    {
-        switch (message.Command)
+        _actions = new Dictionary<string, Func<JsonElement, Task>>(StringComparer.OrdinalIgnoreCase)
         {
-            case "CreateUser":
-                await CreateUser(message);
-                break;
-
-            case "UpdateUser":
-                await UpdateUser(message);
-                break;
-
-            case "DeleteUser":
-                await DeleteUser(message);
-                break;
-            default:
-                throw new Exception($"Command not supported: {message.Command}");
-        }
+            { "CREATE", CreateUser },
+            { "UPDATE", UpdateUser },
+            { "DELETE", DeleteUser },
+            { "GET", GetUser }
+        };
     }
 
-    private async Task CreateUser(EventMessage<object> message)
+    public string TrxType => "USER";
+
+    public async Task HandleAsync(string action, JsonElement data)
     {
-        var dto = JsonSerializer.Deserialize<UserDto>(
-            JsonSerializer.Serialize(message.Payload)
-        );
+        if (!_actions.TryGetValue(action, out var handler))
+            throw new Exception($"Action {action} not supported for USER");
 
-        await _service.CreateAsync(dto, message.UserId);
+        await handler(data);
     }
 
-    private async Task UpdateUser(EventMessage<object> message)
+    private async Task CreateUser(JsonElement data)
+    {
+        Console.WriteLine("RAW DATA:");
+        Console.WriteLine(data.GetRawText());
+
+        var dto = JsonSerializer.Deserialize<UserDto>(
+            data.GetRawText(),
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+        if (dto == null)
+            throw new Exception("Invalid user data");
+
+        await _service.CreateAsync(dto, "system");
+    }
+
+    private async Task UpdateUser(JsonElement data)
     {
         var dto = JsonSerializer.Deserialize<UpdateUserDto>(
-            JsonSerializer.Serialize(message.Payload)
-        );
-
-        await _service.UpdateAsync(dto.UserId, dto, message.UserId);
+            data.GetRawText(),
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+        await _service.UpdateAsync(dto.UserId, dto, "system");
     }
 
-    private async Task DeleteUser(EventMessage<object> message)
+    private async Task DeleteUser(JsonElement data)
     {
-        var id = message.Payload.ToString();
-
+        var id = data.GetProperty("userId").GetString();
         await _service.DeleteAsync(id);
+    }
+
+    private async Task GetUser(JsonElement data)
+    {
+        var id = data.GetProperty("userId").GetString();
+        await _service.GetByIdAsync(id);
     }
 }

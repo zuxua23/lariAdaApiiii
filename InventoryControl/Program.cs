@@ -2,10 +2,7 @@
 using InventoryControl.Database;
 using InventoryControl.Database.Seeder;
 using InventoryControl.Handler;
-using InventoryControl.Service.Implementations;
-using InventoryControl.Service.Interfaces;
-using InventoryControl.Services.Implementations;
-using InventoryControl.Services.Interfaces;
+using InventoryControl.Utility;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using StackExchange.Redis;
@@ -28,9 +25,17 @@ builder.Services.AddDbContext<AppDBContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection")));
 #endregion
 
-builder.Services.AddHostedService<RedisConsumer>();
+
+#region DEPENDENCY INJECTION
 builder.Services.AddSingleton<JwtTokenHelper>();
 builder.Services.AddScoped<CommandDispatcher>();
+builder.Services.AddApplicationServices();
+builder.Services.AddCommandHandlers();
+builder.Services.AddHostedService<RedisConsumer>();
+
+#endregion
+
+
 #region MVC + API
 //builder.Services.AddControllersWithViews();
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -49,23 +54,6 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 //builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
 //#endregion
 
-#region DEPENDENCY INJECTION
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ILocationService, LocationService>();
-builder.Services.AddScoped<IItemService, ItemService>();
-builder.Services.AddScoped<IReaderService, ReaderService>();
-builder.Services.AddScoped<IPermissionService, PermissionService>();
-builder.Services.AddScoped<IRoleService, RoleService>();
-builder.Services.AddScoped<IStockInService, StockInService>();
-builder.Services.AddScoped<IStockOutService, StockOutService>();
-builder.Services.AddScoped<IStockPreparationService, StockPreparationService>();
-builder.Services.AddScoped<IReaderService, ReaderService>();
-builder.Services.AddScoped<IDOService, DOService>();
-builder.Services.AddScoped<IStockTakingService, StockTakingService>();
-builder.Services.AddScoped<IPrintTagRegisService, PrintTagRegisService>();
-builder.Services.AddScoped<UserHandler>();
-#endregion
 
 var app = builder.Build();
 

@@ -71,13 +71,18 @@ public class UserService : IUserService
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(dto.Password))
+                throw new Exception("Password cannot be empty");
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+
             var user = new User
             {
                 Id = Guid.NewGuid().ToString(),
                 UserId = dto.UserId,
                 Fullname = dto.Fullname,
                 Username = dto.Username,
-                Password = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                Password = hashedPassword,
                 CreatedBy = createdBy,
                 CreatedAt = DateTime.UtcNow
             };

@@ -44,7 +44,7 @@ public class ItemApiController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(ItemDto dto)
     {
-        var createdBy = User.FindFirst(ClaimTypes.Name)?.Value ?? "system";
+        var createdBy = Request.Headers["X-User-Id"].FirstOrDefault() ?? "system";
 
         await _service.CreateAsync(dto, createdBy);
         return Ok(new { message = "Item berhasil dibuat" });
@@ -55,7 +55,7 @@ public class ItemApiController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(string id, ItemDto dto)
     {
-        var updatedBy = User.FindFirst(ClaimTypes.Name)?.Value ?? "system";
+        var updatedBy = Request.Headers["X-User-Id"].FirstOrDefault() ?? "system";
 
         await _service.UpdateAsync(id, dto, updatedBy);
         return Ok(new { message = "Item berhasil diperbarui" });

@@ -1,4 +1,7 @@
-﻿namespace InventoryControl.Models;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace InventoryControl.Models;
 public class EventMessage<T>
 {
     public string CorrelationId { get; set; }
@@ -17,4 +20,18 @@ public class EventMessage<T>
     public int RetryCount { get; set; } = 0;
 
     public T Payload { get; set; }
+}
+
+public class Message
+{
+    [JsonPropertyName("trx_type")]
+    public string TrxType { get; set; }
+
+    [JsonPropertyName("action")]
+    public string Action { get; set; }
+
+    [JsonPropertyName("data")]
+    public JsonElement Data { get; set; }
+
+    public int RetryCount { get; set; } = 0;
 }

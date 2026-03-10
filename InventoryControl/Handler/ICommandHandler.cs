@@ -1,9 +1,11 @@
 ﻿using InventoryControl.Models;
+using System.Text.Json;
 
 namespace InventoryControl.Handler;
 
 public interface ICommandHandler
 {
-    string Command { get; }
-    Task HandleAsync(EventMessage<object> message);
+    string TrxType { get; }
+
+    Task HandleAsync(string action, JsonElement data);
 }
