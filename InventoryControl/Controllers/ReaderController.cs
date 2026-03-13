@@ -25,7 +25,7 @@ public class ReaderApiController : ControllerBase
         return Ok(await _service.GetAllAsync());
     }
 
-    [HttpGet]
+    [HttpGet("{id}")]
     public async Task<IActionResult> GetById(string id)
     {
         var reader = await _service.GetByIdAsync(id);

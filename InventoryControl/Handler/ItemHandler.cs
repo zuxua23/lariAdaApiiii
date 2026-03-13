@@ -52,7 +52,10 @@ public class ItemHandler : ICommandHandler
             });
         if (dto == null)
             throw new Exception("Invalid item data");
-        await _service.UpdateAsync(dto.ItemId, dto, "system");
+
+        var id = data.GetProperty("id").GetString();
+
+        await _service.UpdateAsync(id, dto, "system");
     }
 
     private async Task DeleteItem(JsonElement data)

@@ -56,12 +56,16 @@ public class UserHandler : ICommandHandler
             {
                 PropertyNameCaseInsensitive = true
             });
-        await _service.UpdateAsync(dto.UserId, dto, "system");
+        var id = data.GetProperty("id").GetString();
+
+        await _service.UpdateAsync(id, dto, "system");
     }
 
     private async Task DeleteUser(JsonElement data)
     {
-        var id = data.GetProperty("userId").GetString();
+        var id = data.GetProperty("id").GetString();
+        if (string.IsNullOrEmpty(id))
+            throw new Exception("Invalid user id");
         await _service.DeleteAsync(id);
     }
 

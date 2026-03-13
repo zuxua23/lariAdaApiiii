@@ -16,10 +16,10 @@ public class StockTakingService : IStockTakingService
         _db = db;
     }
 
-    private static HashSet<string> scannedTags = new();
 
     public async Task<string> CreateAsync(StockTakingCreateDto dto, string user)
     {
+
         try
         {
             var st = new StockTaking
@@ -33,8 +33,6 @@ public class StockTakingService : IStockTakingService
 
             _db.StockTakings.Add(st);
             await _db.SaveChangesAsync();
-
-            scannedTags.Clear();
 
             DailyFileLogger.Info($"StockTaking session dibuat. SttId={st.SttId}, User={user}");
 
@@ -78,12 +76,6 @@ public class StockTakingService : IStockTakingService
                 DailyFileLogger.Warn($"ScanAsync gagal: EPC {dto.Epc} tidak ditemukan");
                 throw new Exception("Tag tidak ditemukan");
             }
-
-            var key = $"{dto.SttId}-{tag.Id}";
-            if (scannedTags.Contains(key))
-                return;
-
-            scannedTags.Add(key);
 
             var exists = await _db.StockTakingDetails
                 .AnyAsync(x => x.SttId == dto.SttId && x.TagId == tag.Id);

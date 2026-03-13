@@ -58,7 +58,7 @@ public class DOHandler : ICommandHandler
 
     private async Task UpdateDOStatus(JsonElement data)
     {
-        var id = data.GetProperty("id").GetString();
+        var id = data.GetProperty("doId").GetString();
         var status = data.GetProperty("status").GetString();
         if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(status))
             throw new Exception("Invalid DO id or status");
@@ -67,7 +67,7 @@ public class DOHandler : ICommandHandler
 
     private async Task DeleteDO(JsonElement data)
     {
-        var id = data.GetProperty("id").GetString();
+        var id = data.GetProperty("doId").GetString();
         if (string.IsNullOrEmpty(id))
             throw new Exception("Invalid DO id");
         await _service.DeleteAsync(id);

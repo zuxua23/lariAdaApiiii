@@ -33,6 +33,8 @@ public class SeedAccess
     ("DO_GET", "View DO", "PER010"),
     ("DO_CREATE", "Create DO", "PER011"),
     ("DO_UPDATE", "Update DO", "PER012"),
+    ("DO_UPDATE_STATUS", "Update DO", "PER030"),
+    ("DO_DELETE", "Delete DO", "PER031"),
 
     // LOCATION
     ("LOCATION_GET", "View Location", "PER013"),
@@ -41,7 +43,7 @@ public class SeedAccess
     ("LOCATION_DELETE", "Delete Location", "PER016"),
 
     // READER
-    ("READER_VIEW", "View Reader", "PER017"),
+    ("READER_GET", "View Reader", "PER017"),
     ("READER_CREATE", "Create Reader", "PER018"),
     ("READER_DELETE", "Delete Reader", "PER019"),
     ("READER_UPDATE", "Update Reader", "PER020"),

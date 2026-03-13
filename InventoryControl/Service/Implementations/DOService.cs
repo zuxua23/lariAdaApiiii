@@ -173,15 +173,26 @@ public class DOService : IDOService
         }
 
     }
-    
+
     public async Task DeleteAsync(string id)
     {
-        var doData = await _db.DOs.FindAsync(id);
+        try
+        {
+            var doData = await _db.DOs.FindAsync(id);
 
-        if (doData == null || doData.IsDelete)
-            throw new Exception("DO tidak ditemukan");
+            if (doData == null || doData.IsDelete)
+                throw new Exception("DO tidak ditemukan");
 
-        doData.IsDelete = true;
-        await _db.SaveChangesAsync();
+            doData.IsDelete = true;
+
+            await _db.SaveChangesAsync();
+
+            DailyFileLogger.Info($"DO dengan ID {id} berhasil dihapus");
+        }
+        catch (Exception ex)
+        {
+            DailyFileLogger.Error($"Gagal menghapus DO dengan ID {id}", ex);
+            throw;
+        }
     }
 }

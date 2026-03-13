@@ -37,11 +37,17 @@ public class DOApiController : ControllerBase
         return Ok(new { message = "DO berhasil dibuat" });
     }
 
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(string id, [FromBody] DOUpdateDTO dto)
+    {
+        await _service.UpdateAsync(id, dto);
+        return Ok(new { message = "DO berhasil diupdate" });
+    }
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
         await _service.DeleteAsync(id);
-        return Ok(new { message = "User berhasil dihapus" });
+        return Ok(new { message = "DO berhasil dihapus" });
     }
 
     [HttpPut("{id}")]

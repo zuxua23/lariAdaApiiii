@@ -22,7 +22,7 @@ public class StockTakingHandler : ICommandHandler
         };
     }
 
-    public string TrxType => "STOCKTAKING";
+    public string TrxType => "STOCK_TAKING";
 
     public async Task HandleAsync(string action, JsonElement data)
     {

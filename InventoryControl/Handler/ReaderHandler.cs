@@ -53,7 +53,9 @@ public class ReaderHandler : ICommandHandler
             });
         if (dto == null)
             throw new Exception("Invalid reader data");
-        await _service.UpdateAsync(dto.RdrId, dto, "system");
+        var id = data.GetProperty("id").GetString();
+
+        await _service.UpdateAsync(id, dto, "system");
     }
 
     private async Task DeleteReader(JsonElement data)
