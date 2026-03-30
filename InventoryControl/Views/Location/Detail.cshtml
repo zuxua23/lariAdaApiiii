@@ -1,0 +1,140 @@
+<body class="hold-transition sidebar-mini layout-fixed">
+
+    <div class="wrapper">
+
+        @Html.Partial("_Navbar")
+        @Html.Partial("_Sidebar")
+
+        <div class="content-wrapper">
+
+            <div class="content-header">
+
+                <div class="container-fluid">
+
+                    <div class="row mb-2">
+
+                        <div class="col-sm-6">
+                            <h1>Detail Location</h1>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="/location">Location</a></li>
+                                <li class="breadcrumb-item active">Detail</li>
+                            </ol>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <section class="content">
+                <div class="container-fluid">
+
+                    <div class="card card-primary">
+
+                        <div class="card-header">
+                            <h3 class="card-title">Location Detail</h3>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="form-group">
+                                <label>Location ID</label>
+                                <input id="locId" class="form-control" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Name</label>
+                                <input id="name" class="form-control">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea id="description" class="form-control"></textarea>
+                            </div>
+
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-primary" onclick="updateLocation()">
+                                    Update
+                                </button>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </section>
+
+        </div>
+
+        @Html.Partial("_Footer")
+
+    </div>
+
+    @Html.Partial("_BaseScript")
+
+    <script>
+
+        let id = "@ViewData["id"]";
+
+        $(document).ready(function () {
+            loadLocation();
+        });
+
+        async function loadLocation() {
+            const response = await fetch(`/api/location/${id}`, {
+                method: "GET",
+                credentials: "include"
+            });
+
+            if(!response.ok){
+                alert("Gagal load location")
+                return;
+            }
+
+            const loc = await response.json();
+
+            $("#locId").val(loc.locId);
+            $("#name").val(loc.name);
+            $("#description").val(loc.description);
+        }
+
+        async function updateLocation() {
+
+            const payload = {
+                    locId: $("#locId").val(),
+                    name: $("#name").val(),
+                    description: $("#description").val()
+                
+            };
+
+            const response = await fetch(`/api/location/${id}`, {
+                method: "PUT",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Update berhasil",
+                    text: "Location berhasil diupdate",
+                }).then(() => {
+                   window.location.href = "/location";
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Update gagal",
+                    Text: "Gagal update location"
+                });
+            }
+        }
+
+    </script>
+
+</body>

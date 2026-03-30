@@ -7,8 +7,8 @@ namespace InventoryControl.Entity;
 public class StockTaking
 {
     [Key]
-    [Column("st_id")]
-    public string StockTakingId { get; set; }
+    [Column("stt_id")]
+    public string SttId { get; set; }
 
     [Column("remark")]
     public string? Remark { get; set; }
@@ -21,5 +21,8 @@ public class StockTaking
 
     [Column("created_at")]
     public DateTime? CreatedAt { get; set; }
+
+    public ICollection<StockTakingDetail>? Details { get; set; }
+
 
 }

@@ -1,0 +1,106 @@
+﻿<body class="hold-transition login-page">
+
+    <div class="login-box">
+
+        <div class="card card-outline card-primary">
+
+            <div class="card-header text-center">
+                <img src="~/img/logo_login.svg" width="200px" />
+                <h2>Inventory Control</h2>
+            </div>
+
+            <div class="card-body">
+
+                <form id="loginForm">
+
+                    <div class="input-group mb-3">
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Username"
+                               id="username"
+                               required>
+
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-user"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <input type="password"
+                               class="form-control"
+                               placeholder="Password"
+                               id="password"
+                               required>
+
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-lock"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-12">
+                            <button type="submit"
+                                    class="btn btn-primary btn-block">
+                                Sign In
+                            </button>
+                        </div>
+
+                    </div>
+
+                </form>
+
+                <div class="text-danger mt-2" id="loginError"></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    @Html.Partial("_BaseScript")
+
+    <script>
+
+        document.getElementById("loginForm").addEventListener("submit", async function(e){
+
+            e.preventDefault();
+
+            const data = {
+                username: document.getElementById("username").value,
+                password: document.getElementById("password").value
+            };
+
+            try{
+
+                const response = await fetch("/auth/login", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if(!response.ok){
+                    document.getElementById("loginError").innerText = "Login gagal";
+                    return;
+                }
+
+
+                window.location.href = "/home/index";
+
+            }
+            catch(err){
+                document.getElementById("loginError").innerText = "Server error";
+            }
+
+        });
+
+    </script>
+
+</body>

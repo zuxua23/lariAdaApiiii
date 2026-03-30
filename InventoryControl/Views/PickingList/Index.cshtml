@@ -1,0 +1,246 @@
+<body class="hold-transition sidebar-mini layout-fixed">
+
+    <div class="wrapper">
+
+        @Html.Partial("_Navbar")
+        @Html.Partial("_Sidebar")
+
+        <div class="content-wrapper">
+
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+
+                        <div class="col-sm-6">
+                            <h1>Picking List</h1>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Picking List</li>
+                            </ol>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <section class="content">
+                <div class="container-fluid">
+
+                    <div class="card card-primary">
+
+                        <div class="card-header">
+                            <h3 class="card-title">Picking List</h3>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row mb-3">
+                                <div class="col-12 d-flex justify-content-end">
+                                    <button class="btn btn-primary" data-toggle="modal" data-target="#createDO">
+                                        Create DO
+                                    </button>
+                                </div>
+                            </div>
+
+                            <table id="datatablesIndex" class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>DO Number</th>
+                                        <th>Scanner</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </section>
+
+        </div>
+
+        @Html.Partial("_Footer")
+
+    </div>
+
+    <!-- MODAL CREATE -->
+    <div class="modal fade" id="createDO">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5>Create DO</h5>
+                    <button class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <form id="createDOForm">
+                    <div class="modal-body">
+
+                        <div class="form-group">
+                            <label>DO Number</label>
+                            <input type="text" name="doNumber" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Scanner Type</label>
+                            <input type="text" name="scannerType" class="form-control" required>
+                        </div>
+
+                        <div id="detailContainer"></div>
+
+                        <button type="button" class="btn btn-sm btn-success" onclick="addDetail()">+ Item</button>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    @Html.Partial("_BaseScript")
+
+    <script>
+
+        let table;
+
+        $(document).ready(function () {
+            loadDO();
+        });
+
+        async function loadDO() {
+
+            const response = await fetch("/api/do", {
+                method: "GET",
+                credentials: "include"
+            });
+
+            const data = await response.json();
+
+            if ($.fn.DataTable.isDataTable('#datatablesIndex')) {
+                $('#datatablesIndex').DataTable().clear().destroy();
+            }
+
+            table = $("#datatablesIndex").DataTable({
+                data: data,
+                columns: [
+                    { data: null, render: (d,t,r,m)=>m.row+1 },
+                    { data: "doNumber" },
+                    { data: "scannerType" },
+                    { data: "status" },
+                    {
+                        data: null,
+                        render: function (data) {
+                            return `
+                                <a href="/do/detail?id=${data.doId}" class="btn btn-info btn-sm">Detail</a>
+                                <button class="btn btn-danger btn-sm"
+                                    onclick="deleteDO('${data.doId}')">
+                                    Delete
+                                </button>
+                            `;
+                        }
+                    }
+                ]
+            });
+        }
+
+        function addDetail() {
+            $("#detailContainer").append(`
+                <div class="row mb-2">
+                    <div class="col">
+                        <input class="form-control itemId" placeholder="ItemId">
+                    </div>
+                    <div class="col">
+                        <input class="form-control qty" placeholder="Qty">
+                    </div>
+                </div>
+            `);
+        }
+
+        $("#createDOForm").submit(async function (e) {
+            e.preventDefault();
+
+            const form = e.target;
+
+            let details = [];
+
+            $("#detailContainer .row").each(function () {
+                details.push({
+                    itemId: $(this).find(".itemId").val(),
+                    qtyRequired: parseInt($(this).find(".qty").val())
+                });
+            });
+
+            const payload = {
+                doNumber: form.doNumber.value,
+                scannerType: form.scannerType.value,
+                details
+            };
+
+            const response = await fetch("/api/do", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                Swal.fire({
+                    icon: "success",
+                    title: "DO created",
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    $("#createDO").modal("hide");
+                    form.reset();
+                    loadDO();
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Failed to create DO"
+                });
+            }
+        });
+
+        async function deleteDO(id) {
+
+            if (!confirm("Delete DO ini?")) return;
+
+            const response = await fetch(`/api/do/${id}`, {
+                method: "DELETE",
+                credentials: "include"
+            });
+
+            if (response.ok) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Deleted",
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    loadDO();
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Failed to delete"
+                });
+            }
+        }
+
+    </script>
+
+</body>

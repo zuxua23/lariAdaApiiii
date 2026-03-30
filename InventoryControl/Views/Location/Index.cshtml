@@ -1,0 +1,251 @@
+<body class="hold-transition sidebar-mini layout-fixed">
+
+    <div class="wrapper">
+
+        @Html.Partial("_Navbar")
+        @Html.Partial("_Sidebar")
+
+        <div class="content-wrapper">
+
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+
+                        <div class="col-sm-6">
+                            <h1>Location</h1>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Location</li>
+                            </ol>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <section class="content">
+                <div class="container-fluid">
+
+                    <div class="card card-primary">
+
+                        <div class="card-header">
+                            <h3 class="card-title">Location List</h3>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row mb-3">
+                                <div class="col-12 d-flex justify-content-end">
+                                    <button class="btn btn-primary" data-toggle="modal" data-target="#createLocation">
+                                        Create Location
+                                    </button>
+                                </div>
+                            </div>
+
+                            <table id="datatablesIndex" class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Location ID</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </section>
+
+        </div>
+
+        @Html.Partial("_Footer")
+
+    </div>
+
+    <!-- MODAL CREATE -->
+    <div class="modal fade" id="createLocation">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5>Create Location</h5>
+                    <button class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <form id="createLocationForm">
+                    <div class="modal-body">
+
+                        <div class="form-group">
+                            <label>Location ID</label>
+                            <input type="text" name="locId" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea name="description" class="form-control"></textarea>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    @Html.Partial("_BaseScript")
+
+    <script>
+
+        let table;
+
+        $(document).ready(function () {
+            loadLocations();
+        });
+
+        async function loadLocations() {
+
+            // const payload = {
+            //     trx_type: "LOCATION",
+            //     action: "GET",
+            //     data: {}
+            // };
+
+            const response = await fetch("/api/location", {
+                method: "GET",
+        credentials: "include"  
+            });
+
+            if(response.status === 401) {
+                alert("Session expired. Please login again.");
+                window.location.href = "/login";
+                return;
+            }
+
+            if(response.status === 403) {
+                alert("You don't have access to view locations.");
+                return;
+            }
+
+            const data = await response.json();
+
+            if ($.fn.DataTable.isDataTable('#datatablesIndex')) {
+                $('#datatablesIndex').DataTable().clear().destroy();
+            }
+
+            table = $("#datatablesIndex").DataTable({
+                data: data,
+                columns: [
+                    {
+                        data: null,
+                        render: (data, type, row, meta) => meta.row + 1
+                    },
+                    { data: "locId" },
+                    { data: "name" },
+                    { data: "description" },
+                    {
+                        data: null,
+                        render: function (data) {
+                            return `
+                                <a href="/location/detail?id=${data.id}" class="btn btn-info btn-sm">Detail</a>
+                                <button class="btn btn-danger btn-sm"
+                                    onclick="deleteLocation('${data.id}')">
+                                    Delete
+                                </button>
+                            `;
+                        }
+                    }
+                ]
+            });
+
+        }
+
+        $("#createLocationForm").submit(async function (e) {
+            e.preventDefault();
+
+            const form = e.target;
+
+            const payload = {
+                    locId: form.locId.value,
+                    name: form.name.value,
+                    description: form.description.value
+                
+            };
+
+            const response = await fetch("/api/location", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Location created successfully",
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+
+                $("#createLocation").modal("hide");
+                form.reset();
+                loadLocations();
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Failed to create location",
+                    text: "Please try again."
+                });
+            }
+        });
+
+        async function deleteLocation(id) {
+
+            if (!confirm("Delete location ini?")) return;
+
+
+        const response = await fetch(`/api/location/${id}`, {
+                    method: "DELETE",
+                credentials: "include",
+            });
+
+            if (response.ok) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Location deleted successfully",
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                loadLocations();
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Failed to delete location",
+                    text: "Please try again."
+                });
+
+            }
+        }
+
+    </script>
+
+</body>

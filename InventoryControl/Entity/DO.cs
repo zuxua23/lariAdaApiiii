@@ -17,7 +17,7 @@ public class DO
     public string? ScannerType { get; set; }
 
     [Column("status")]
-    public string? Status { get; set; }
+    public string? Status { get; set; }  //DRAFT → PREPARATION → READY → COMPLETED
 
     [Column("created_by")]
     public string? CreatedBy { get; set; }
@@ -25,5 +25,6 @@ public class DO
     [Column("created_at")]
     public DateTime? CreatedAt { get; set; }
     [Column("isDelete")]
-    public int? IsDelete { get; set; }
+    public bool IsDelete { get; set; } = false;
+    public ICollection<DODetail>? Details { get; set; }
 }

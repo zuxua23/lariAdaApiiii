@@ -1,0 +1,271 @@
+<body class="hold-transition sidebar-mini layout-fixed">
+
+    <div class="wrapper">
+
+        @Html.Partial("_Navbar")
+        @Html.Partial("_Sidebar")
+
+        <div class="content-wrapper">
+
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+
+                        <div class="col-sm-6">
+                            <h1>Item</h1>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Item</li>
+                            </ol>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <section class="content">
+                <div class="container-fluid">
+
+                    <div class="card card-primary">
+
+                        <div class="card-header">
+                            <h3 class="card-title">Item List</h3>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row mb-3">
+                                <div class="col-12 d-flex justify-content-end">
+                                    <button class="btn btn-primary" data-toggle="modal" data-target="#createItem">
+                                        Create Item
+                                    </button>
+                                </div>
+                            </div>
+
+                            <table id="datatablesIndex" class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Item ID</th>
+                                        <th>Item Name</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </section>
+
+        </div>
+
+        @Html.Partial("_Footer")
+
+    </div>
+
+    <div class="modal fade" id="createItem">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5>Create Item</h5>
+                    <button class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <form id="createItemForm">
+                    <div class="modal-body">
+
+                        <div class="form-group">
+                            <label>Item ID</label>
+                            <input type="text" id="itemId" name="itemId" class="form-control" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Item Name</label>
+                            <input type="text" name="itemName" class="form-control" required>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    @Html.Partial("_BaseScript")
+
+    <script>
+
+         function generateItemId(data) {
+
+            let max = 0;
+
+            data.forEach(item => {
+
+                if (!item.itemId) return;
+
+                let number = parseInt(item.itemId.replace("ITM", ""));
+
+                if (number > max) {
+                    max = number;
+                }
+
+            });
+
+            let next = max + 1;
+
+            let formatted = "ITM" + String(next).padStart(5, '0');
+
+            $("#itemId").val(formatted);
+
+        }
+
+        let table;
+
+        $(document).ready(function () {
+            loadItems();
+        });
+
+        async function loadItems() {
+
+            const response = await fetch("/api/item", {
+                method: "GET",
+                credentials: "include"
+            });
+            if (response.status === 401) {
+            window.location.href = "/login";
+            return;
+        }
+
+        if (response.status === 403) {
+            alert("Tidak punya akses");
+            return;
+        }
+
+            const data = await response.json();
+
+            if ($.fn.DataTable.isDataTable('#datatablesIndex')) {
+                $('#datatablesIndex').DataTable().clear().destroy();
+            }
+
+            table = $("#datatablesIndex").DataTable({
+                data: data,
+                columns: [
+                    {
+                        data: null,
+                        render: (data, type, row, meta) => meta.row + 1
+                    },
+                    { data: "itemId" },
+                    { data: "itemName" },
+                    {
+                        data: null,
+                        render: function (data) {
+                            return `
+                              <a href="/item/detail?id=${data.id}"
+                               class="btn btn-info btn-sm">
+                               Detail
+                            </a>
+                                <button class="btn btn-danger btn-sm"
+                                    onclick="deleteItem('${data.id}')">
+                                    Delete
+                                </button>
+                            `;
+                        }
+                    }
+                ]
+            });
+
+        }
+
+        $("#createItemForm").submit(async function (e) {
+            e.preventDefault();
+
+            const form = e.target;
+
+            const payload = {
+                itemName: form.itemName.value
+            };
+
+            const response = await fetch("/api/item", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+
+            if (response.ok) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Item berhasil dibuat',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    $("#createItem").modal("hide");
+                    loadItems();
+                    form.reset();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Create item gagal'
+                });
+
+            }
+        });
+
+           async function deleteItem(id) {
+
+            if (!confirm("Delete item ini?")) return;
+
+            const response = await fetch(`/api/item/${id}`, {
+                method: "DELETE",
+                credentials: "include"
+            });
+
+        if (response.ok) {
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: 'Item berhasil dihapus',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                loadItems();
+            });
+
+        } else {
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: 'Delete item gagal'
+            });
+
+            }
+        }
+         $('#createItem').on('shown.bs.modal', function () {
+
+            const data = table.rows().data().toArray();
+
+            generateItemId(data);
+
+        });
+
+    </script>
+
+</body>

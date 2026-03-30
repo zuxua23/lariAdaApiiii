@@ -1,6 +1,5 @@
 ﻿using InventoryControl.Entity;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace InventoryControl.Database.Seeder;
 
@@ -11,69 +10,189 @@ public class SeedAccess
         using var context = new AppDBContext(
             serviceProvider.GetRequiredService<DbContextOptions<AppDBContext>>());
 
-        var systemUser = await context.Users
-    .FirstOrDefaultAsync(u => u.Username == "SYSTEM");
-        if (!context.Permissions.Any())
+        await context.Database.MigrateAsync();
+
+        var permissionSeeds = new List<(string Code, string Name, string PerId)>
+{
+    // MASTER ITEM
+    ("ITEM_GET", "View Master Item", "PER001"),
+    ("ITEM_CREATE", "Create Master Item", "PER002"),
+    ("ITEM_UPDATE", "Update Master Item", "PER003"),
+    ("ITEM_DELETE", "Delete Master Item", "PER004"),
+
+    // TAG
+    ("TAG_PRINT", "Print Tag", "PER005"),
+    ("TAG_REGISTER", "Reprint Tag", "PER006"),
+
+    // STOCK
+    ("STOCK_IN", "Stock In", "PER007"),
+    ("STOCK_PREPARATION", "Stock Preparation", "PER008"),
+    ("STOCK_OUT", "Stock Out", "PER009"),
+
+    // DO
+    ("DO_GET", "View DO", "PER010"),
+    ("DO_CREATE", "Create DO", "PER011"),
+    ("DO_UPDATE", "Update DO", "PER012"),
+    ("DO_UPDATE_STATUS", "Update DO", "PER030"),
+    ("DO_DELETE", "Delete DO", "PER031"),
+
+    // LOCATION
+    ("LOCATION_GET", "View Location", "PER013"),
+    ("LOCATION_CREATE", "Create Location", "PER014"),
+    ("LOCATION_UPDATE", "Update Location", "PER015"),
+    ("LOCATION_DELETE", "Delete Location", "PER016"),
+
+    // READER
+    ("READER_GET", "View Reader", "PER017"),
+    ("READER_CREATE", "Create Reader", "PER018"),
+    ("READER_DELETE", "Delete Reader", "PER019"),
+    ("READER_UPDATE", "Update Reader", "PER020"),
+
+    // STOCK TAKING
+    ("STOCK_TAKING_CREATE", "Create Stock Taking", "PER021"),
+    ("STOCK_TAKING_SCAN", "Scan Stock Taking", "PER022"),
+    ("STOCK_TAKING_REMOVE", "Remove Stock Taking", "PER023"),
+    ("STOCK_TAKING_MANUAL", "Manual Stock Taking", "PER024"),
+    ("STOCK_TAKING_FINALIZE", "Finalize Stock Taking", "PER025"),
+
+                ("USER_GET", "View Master User","PER026"),
+            ("USER_CREATE", "Create Master User", "PER027"),
+            ("USER_UPDATE", "Update Master User", "PER028"),
+            ("USER_DELETE", "Delete Master User", "PER029"),
+};
+        foreach (var (code, name, perid) in permissionSeeds)
         {
-            var permissions = new List<Permission>
+            bool exists = await context.Permissions
+                .AnyAsync(p => p.Code == code);
+
+            if (!exists)
             {
-                new Permission {Id = Guid.NewGuid().ToString(), Code = "MASTER_ITEM_VIEW", Name = "View Master Item", CreatedBy = "SYSTEM", PerId = "PER001"},
-                new Permission {Id = Guid.NewGuid().ToString(), Code = "MASTER_ITEM_CREATE", Name = "Create Master Item", CreatedBy = "SYSTEM",PerId = "PER002"  },
-                new Permission {Id = Guid.NewGuid().ToString(), Code = "MASTER_ITEM_UPDATE", Name = "Update Master Item", CreatedBy = "SYSTEM", PerId = "PER003"},
-                new Permission {Id = Guid.NewGuid().ToString(), Code = "MASTER_ITEM_DELETE", Name = "Delete Master Item", CreatedBy = "SYSTEM", PerId = "PER004"},
-
-                new Permission {Id = Guid.NewGuid().ToString(), Code = "TRANS_STOCK_IN", Name = "Stock In", CreatedBy = "SYSTEM", PerId = "PER005"},
-                new Permission {Id = Guid.NewGuid().ToString(), Code = "TRANS_STOCK_OUT", Name = "Stock Out", CreatedBy = "SYSTEM", PerId = "PER006"},
-
-                new Permission {Id = Guid.NewGuid().ToString(), Code = "PRINT_TAG", Name = "Print Tag", CreatedBy = "SYSTEM", PerId = "PER007"},
-                new Permission {Id = Guid.NewGuid().ToString(), Code = "REPRINT_TAG", Name = "Reprint Tag", CreatedBy = "SYSTEM"       , PerId = "PER008"}
-            };
-
-            context.Permissions.AddRange(permissions);
-            await context.SaveChangesAsync();
+                context.Permissions.Add(new Permission
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Code = code,
+                    Name = name,
+                    PerId = perid,
+                    CreatedBy = "SYSTEM",
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
         }
 
-        if (!context.Roles.Any())
-        {
-            var operatorRole = new Role
-            {
-                Id = Guid.NewGuid().ToString(),
-                RolId="ROL001",
-                Code = "OPERATOR",
-                Name = "Operator"
-            };
+        await context.SaveChangesAsync();
 
-            var adminRole = new Role
+
+        var adminRole = await context.Roles
+            .FirstOrDefaultAsync(r => r.Code == "ADMIN");
+
+        if (adminRole == null)
+        {
+            adminRole = new Role
             {
                 Id = Guid.NewGuid().ToString(),
-                RolId="ROL002",
                 Code = "ADMIN",
                 Name = "Administrator"
             };
 
-            context.Roles.AddRange(operatorRole, adminRole);
-            await context.SaveChangesAsync();
+            context.Roles.Add(adminRole);
+        }
 
-            // Assign permission ke role
-            var stockInPermission = context.Permissions
-                .First(p => p.Code == "TRANS_STOCK_IN");
+        var operatorRole = await context.Roles
+            .FirstOrDefaultAsync(r => r.Code == "OPERATOR");
 
-            context.RolePermissions.Add(new Role_Permission
+        if (operatorRole == null)
+        {
+            operatorRole = new Role
             {
-                RolId = operatorRole.RolId,
-                PerId = stockInPermission.PerId
-            });
+                Id = Guid.NewGuid().ToString(),
+                Code = "OPERATOR",
+                Name = "Operator"
+            };
 
-            var allPermissions = context.Permissions.ToList();
+            context.Roles.Add(operatorRole);
+        }
 
-            foreach (var permission in allPermissions)
+        await context.SaveChangesAsync();
+
+
+        var allPermissions = await context.Permissions.ToListAsync();
+        var index = 2;
+        foreach (var permission in allPermissions)
+        {
+            bool exists = await context.RolePermissions.AnyAsync(rp =>
+                rp.RoleId == adminRole.Id &&
+                rp.PermissionId == permission.Id);
+
+            if (!exists)
             {
                 context.RolePermissions.Add(new Role_Permission
                 {
-                    RolId = adminRole.RolId,
-                    PerId = permission.PerId
+                    Id = Guid.NewGuid().ToString(),
+                    RoleId = adminRole.Id,
+                    PermissionId = permission.Id,
+                    CreatedAt = DateTime.UtcNow
                 });
             }
+        }
+
+        var stockInPermission = allPermissions
+            .FirstOrDefault(p => p.Code == "STOCK_IN");
+
+        if (stockInPermission != null)
+        {
+            bool exists = await context.RolePermissions.AnyAsync(rp =>
+                rp.RoleId == operatorRole.Id &&
+                rp.PermissionId == stockInPermission.Id);
+
+            if (!exists)
+            {
+                context.RolePermissions.Add(new Role_Permission
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    RoleId = operatorRole.Id,
+                    PermissionId = stockInPermission.Id,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
+        await context.SaveChangesAsync();
+
+
+        var adminUser = await context.Users
+            .FirstOrDefaultAsync(u => u.Username == "admin");
+
+        if (adminUser == null)
+        {
+            adminUser = new User
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = "USR001",
+                Fullname = "Administrator",
+                Username = "admin",
+                Password = BCrypt.Net.BCrypt.HashPassword("admin123"),
+                CreatedBy = "SYSTEM",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            context.Users.Add(adminUser);
+            await context.SaveChangesAsync();
+        }
+
+
+        bool hasAdminRole = await context.UserRoles.AnyAsync(ur =>
+            ur.UserId == adminUser.Id &&
+            ur.RoleId == adminRole.Id);
+
+        if (!hasAdminRole)
+        {
+            context.UserRoles.Add(new User_Role
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = adminUser.Id,
+                RoleId = adminRole.Id,
+                CreatedAt = DateTime.UtcNow
+            });
 
             await context.SaveChangesAsync();
         }

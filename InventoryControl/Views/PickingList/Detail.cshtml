@@ -1,0 +1,136 @@
+<body class="hold-transition sidebar-mini layout-fixed">
+
+    <div class="wrapper">
+
+        @Html.Partial("_Navbar")
+        @Html.Partial("_Sidebar")
+
+        <div class="content-wrapper">
+
+            <div class="content-header">
+                <div class="container-fluid">
+                    <h1>Detail DO</h1>
+                </div>
+            </div>
+
+            <section class="content">
+                <div class="container-fluid">
+
+                    <div class="card card-primary">
+
+                        <div class="card-body">
+
+                            <div class="form-group">
+                                <label>DO Number</label>
+                                <input id="doNumber" class="form-control">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Scanner Type</label>
+                                <input id="scannerType" class="form-control">
+                            </div>
+
+                            <div id="details"></div>
+
+                            <button class="btn btn-success mb-2" onclick="addDetail()">+ Item</button>
+
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-primary" onclick="updateDO()">Update</button>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </section>
+
+        </div>
+
+        @Html.Partial("_Footer")
+
+    </div>
+
+    @Html.Partial("_BaseScript")
+
+    <script>
+
+        let id = "@ViewData["id"]";
+
+        $(document).ready(load);
+
+        async function load() {
+
+            const res = await fetch(`/api/do/${id}`, {
+                method: "GET",
+                credentials: "include"
+            });
+
+            const data = await res.json();
+
+            $("#doNumber").val(data.doNumber);
+            $("#scannerType").val(data.scannerType);
+
+            data.details.forEach(d => {
+                addDetail(d.itemId, d.qtyRequired);
+            });
+        }
+
+        function addDetail(itemId = "", qty = "") {
+            $("#details").append(`
+                <div class="row mb-2">
+                    <div class="col">
+                        <input class="form-control itemId" value="${itemId}">
+                    </div>
+                    <div class="col">
+                        <input class="form-control qty" value="${qty}">
+                    </div>
+                </div>
+            `);
+        }
+
+        async function updateDO() {
+
+            let details = [];
+
+            $("#details .row").each(function () {
+                details.push({
+                    itemId: $(this).find(".itemId").val(),
+                    qtyRequired: parseInt($(this).find(".qty").val())
+                });
+            });
+
+            const payload = {
+                doNumber: $("#doNumber").val(),
+                scannerType: $("#scannerType").val(),
+                details
+            };
+
+            const res = await fetch(`/api/do/${id}`, {
+                method: "PUT",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Updated",
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.href = "/do";
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Failed to update"
+                });
+            }
+        }
+
+    </script>
+
+</body>

@@ -13,13 +13,12 @@ public class UserService : IUserService
         _db = db;
     }
 
-    // READ ALL
     public async Task<List<UserResponseDto>> GetAllAsync()
     {
         try
         {
             var result = await _db.Users
-                .Where(x => x.IsDelete == 0)
+                .Where(x => x.IsDelete == false)
                 .Select(x => new UserResponseDto
                 {
                     Id = x.Id,
@@ -35,17 +34,16 @@ public class UserService : IUserService
         catch (Exception ex)
         {
             DailyFileLogger.Error("Error di GetAllAsync.", ex);
-            throw; // lempar exception agar tetap bisa ditangani caller
+            throw; 
         }
     }
 
-    // READ BY ID
     public async Task<UserResponseDto?> GetByIdAsync(string id)
     {
         try
         {
             var user = await _db.Users
-                .Where(x => x.Id == id && x.IsDelete == 0)
+                .Where(x => x.Id == id && x.IsDelete == false)
                 .Select(x => new UserResponseDto
                 {
                     Id = x.Id,
@@ -69,18 +67,37 @@ public class UserService : IUserService
         }
     }
 
-    // CREATE
     public async Task CreateAsync(UserDto dto, string createdBy)
     {
         try
         {
+            var lastItem = await _db.Users
+            .Where(x => !x.IsDelete)
+            .OrderByDescending(x => x.UserId)
+            .FirstOrDefaultAsync();
+
+            int nextNumber = 1;
+
+            if (lastItem != null)
+            {
+                var lastNumber = int.Parse(lastItem.UserId.Replace("USR", ""));
+                nextNumber = lastNumber + 1;
+            }
+
+            string newId = "USR" + nextNumber.ToString("D5");
+
+            if (string.IsNullOrWhiteSpace(dto.Password))
+                throw new Exception("Password cannot be empty");
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+
             var user = new User
             {
                 Id = Guid.NewGuid().ToString(),
-                UserId = dto.UserId,
+                UserId = newId,
                 Fullname = dto.Fullname,
                 Username = dto.Username,
-                Password = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                Password = hashedPassword,
                 CreatedBy = createdBy,
                 CreatedAt = DateTime.UtcNow
             };
@@ -88,22 +105,21 @@ public class UserService : IUserService
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
 
-            DailyFileLogger.Info($"CreateAsync berhasil untuk UserID {dto.UserId}.");
+            DailyFileLogger.Info($"CreateAsync berhasil untuk UserID {newId}.");
         }
         catch (Exception ex)
         {
-            DailyFileLogger.Error($"Error di CreateAsync untuk UserID {dto.UserId}.", ex);
+            DailyFileLogger.Error($"Error di CreateAsync.", ex);
             throw;
         }
     }
 
-    // UPDATE
     public async Task UpdateAsync(string id, UpdateUserDto dto, string updatedBy)
     {
         try
         {
             var user = await _db.Users.FindAsync(id);
-            if (user == null || user.IsDelete == 1)
+            if (user == null || user.IsDelete == true)
             {
                 DailyFileLogger.Warn($"UpdateAsync: User dengan ID {id} tidak ditemukan.");
                 throw new Exception("User tidak ditemukan");
@@ -123,7 +139,6 @@ public class UserService : IUserService
         }
     }
 
-    // DELETE (SOFT)
     public async Task DeleteAsync(string id)
     {
         try
@@ -135,7 +150,7 @@ public class UserService : IUserService
                 throw new Exception("User tidak ditemukan");
             }
 
-            user.IsDelete = 1;
+            user.IsDelete = true;
             await _db.SaveChangesAsync();
 
             DailyFileLogger.Info($"DeleteAsync berhasil untuk ID {id} (soft delete).");

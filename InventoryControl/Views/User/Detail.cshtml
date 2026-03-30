@@ -1,0 +1,270 @@
+<body class="hold-transition sidebar-mini layout-fixed">
+
+    <div class="wrapper">
+
+        @Html.Partial("_Navbar")
+        @Html.Partial("_Sidebar")
+
+        <div class="content-wrapper">
+
+            <div class="content-header">
+
+                <div class="container-fluid">
+
+                    <div class="row mb-2">
+
+                        <div class="col-sm-6">
+                            <h1>Detail User</h1>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="/user">User</a></li>
+                                <li class="breadcrumb-item active">Detail</li>
+                            </ol>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <section class="content">
+
+                <div class="container-fluid">
+
+                    <div class="card card-primary">
+
+                        <div class="card-header">
+                            <h3 class="card-title">User Detail</h3>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row">
+
+                                <div class="col-6">
+
+                                    <div class="form-group">
+                                        <label>User ID</label>
+                                        <input id="userId" class="form-control" readonly>
+                                    </div>
+
+                                </div>
+
+                                <div class="col-6">
+
+                                    <div class="form-group">
+                                        <label>Username</label>
+                                        <input id="username" class="form-control">
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="row">
+
+                                <div class="col-12">
+
+                                    <div class="form-group">
+                                        <label>Full Name</label>
+                                        <input id="fullname" class="form-control">
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="row">
+
+                                <div class="col-6"></div>
+
+                                <div class="col-6 d-flex justify-content-end">
+
+                                    <button class="btn btn-primary"
+                                            onclick="updateUser()">
+                                        Update
+                                    </button>
+
+                                    <button class="btn btn-secondary ml-2"
+                                            data-toggle="modal"
+                                            data-target="#updatePassword">
+                                        Update Password
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+        @Html.Partial("_Footer")
+
+    </div>
+
+
+
+    <div class="modal fade" id="updatePassword">
+
+        <div class="modal-dialog">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5>Update Password</h5>
+                    <button class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input type="password" id="newPassword" class="form-control">
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button class="btn btn-secondary" data-dismiss="modal">
+                        Close
+                    </button>
+
+                    <button class="btn btn-primary"
+                            onclick="updatePassword()">
+                        Update
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    @Html.Partial("_BaseScript")
+
+    <script>
+
+        let id = "@ViewData["id"]";
+        $(document).ready(function(){
+
+        loadUser();
+
+        });
+
+
+
+        async function loadUser(){
+
+        const payload={
+        trx_type:"USER",
+        action:"GET",
+        data:{id:id}
+        };
+
+        const response=await fetch("/sato",{
+        method:"POST",
+        headers:{
+        "Content-Type":"application/json"
+        },
+        body:JSON.stringify(payload)
+        });
+
+        const result=await response.json();
+
+        const user=result.data ?? result;
+
+        $("#userId").val(user.userId);
+        $("#username").val(user.username);
+        $("#fullname").val(user.fullname);
+
+        }
+
+
+
+        async function updateUser(){
+
+        const payload={
+        trx_type:"USER",
+        action:"UPDATE",
+        data:{
+            id:id,
+        userId:$("#userId").val(),
+        username:$("#username").val(),
+        fullname:$("#fullname").val()
+        }
+        };
+
+        const response=await fetch("/sato",{
+        method:"POST",
+        headers:{
+        "Content-Type":"application/json"
+        },
+        body:JSON.stringify(payload)
+        });
+
+        if(response.ok){
+
+        alert("User updated");
+
+        }else{
+
+        alert("Update gagal");
+
+        }
+
+        }
+
+
+
+        async function updatePassword(){
+
+        const payload={
+        trx_type:"USER",
+        action:"UPDATE",
+        data:{
+            id:id,
+            password:$("#newPassword").val()
+        }
+        };
+
+        const response=await fetch("/sato",{
+        method:"POST",
+        headers:{
+        "Content-Type":"application/json"
+        },
+        body:JSON.stringify(payload)
+        });
+
+        if(response.ok){
+
+        $("#updatePassword").modal("hide");
+
+        alert("Password updated");
+
+        }else{
+
+        alert("Update password gagal");
+
+        }
+
+        }
+
+    </script>
+
+</body>

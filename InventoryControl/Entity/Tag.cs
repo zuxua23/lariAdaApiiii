@@ -17,16 +17,20 @@ public class Tag
     [Column("tag_id")]
     public string TagId { get; set; }
 
+    [Required]
+    [Column("itm_id")]
+    public string ItemId { get; set; }
+
     [Column("tag_epc")]
     public string EpcTag { get; set; }
 
     [Required]
     [Column("status")]
-    public string Status { get; set; }
+    public string? Status { get; set; } //PRINTED / IN_STOCK/ RESERVED /OUT /STANBY
 
     [Required]
     [Column("loc_id")]
-    public string Lokasi { get; set; }
+    public string LocationId { get; set; }
 
     [Required]
     [Column("created_by")]
@@ -41,8 +45,11 @@ public class Tag
 
     [Column("updated_at")]
     public DateTime? UpdatedAt { get; set; }
+
     [Column("isDelete")]
     public int? isDelete { get; set; }
+
+
     public Location Location { get; set; }
     public Item Item { get; set; }
 

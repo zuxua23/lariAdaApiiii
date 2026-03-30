@@ -1,0 +1,348 @@
+<body class="hold-transition sidebar-mini layout-fixed">
+
+    <div class="wrapper">
+
+        <div class="preloader flex-column justify-content-center align-items-center">
+            <img class="animation__shake" src="~/img/logo-nci-pt.svg" height="200">
+        </div>
+
+        @Html.Partial("_Navbar")
+        @Html.Partial("_Sidebar")
+
+        <div class="content-wrapper">
+
+            <div class="content-header">
+                <div class="container-fluid">
+
+                    <div class="row mb-2">
+
+                        <div class="col-sm-6">
+                            <h1>User</h1>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                                <li class="breadcrumb-item active">User</li>
+                            </ol>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <section class="content">
+
+                <div class="container-fluid">
+
+                    <div class="card card-primary">
+
+                        <div class="card-header">
+                            <h3 class="card-title">User List</h3>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row mb-3">
+
+                                <div class="col-12 d-flex justify-content-end">
+                                    <button class="btn btn-primary" data-toggle="modal" data-target="#createUser">
+                                        Create User
+                                    </button>
+                                </div>
+
+                            </div>
+
+
+                            <table id="datatablesIndex" class="table table-bordered table-hover">
+
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>User ID</th>
+                                        <th>Full Name</th>
+                                        <th>Username</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+
+        @Html.Partial("_Footer")
+
+    </div>
+
+
+    <div class="modal fade" id="createUser">
+
+        <div class="modal-dialog modal-lg">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5>Create User</h5>
+                    <button class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <form id="createUserForm">
+                    <div class="modal-body">
+
+                        <div class="row">
+
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label>User ID</label>
+                                    <input type="text" id="userId" name="userId" class="form-control" readonly>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label>Full Name</label>
+                                    <input type="text" name="fullname" class="form-control" required>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="row">
+
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label>Username</label>
+                                    <input type="text" name="username" class="form-control" required>
+                                </div>
+                            </div>
+
+
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label>Password</label>
+                                    <input type="password" name="password" class="form-control" required>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button class="btn btn-primary">Create</button>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    @Html.Partial("_BaseScript")
+
+    <script>
+         function generateUserId(data) {
+
+            let max = 0;
+
+            data.forEach(user => {
+
+                if (!user.userId) return;
+
+                let number = parseInt(user.userId.replace("USR", ""));
+
+                if (number > max) {
+                    max = number;
+                }
+
+            });
+
+            let next = max + 1;
+
+            let formatted = "USR" + String(next).padStart(5, '0');
+
+            $("#userId").val(formatted);
+
+        }
+
+        let table;
+
+        $(document).ready(function () {
+
+            loadUsers();
+
+        });
+
+            async function loadUsers() {
+
+            const response = await fetch("/api/user", {
+                method: "GET",
+                credentials: "include"
+            });
+            if(response.status === 401){
+                alert("Session expired. Please login again.");
+                window.location.href = "/login";
+                return;
+            }
+             if(response.status === 403){
+                alert("Tidak punya akses");
+                return;
+            }
+
+            const data = await response.json();
+
+            if ($.fn.DataTable.isDataTable('#datatablesIndex')) {
+                $('#datatablesIndex').DataTable().clear().destroy();
+            }
+
+            table = $("#datatablesIndex").DataTable({
+
+                data: data,
+
+                columns: [
+
+                    {
+                        data: null,
+                        render: (data, type, row, meta) => meta.row + 1
+                    },
+
+                    { data: "userId" },
+
+                    { data: "fullname" },
+
+                    { data: "username" },
+
+                    {
+                        data: null,
+                        render: function (data) {
+
+                            return `
+                            <a href="/user/detail?id=${data.id}"
+                               class="btn btn-info btn-sm">
+                               Detail
+                            </a>
+
+                            <button class="btn btn-danger btn-sm"
+                                onclick="deleteUser('${data.id}')">
+                                Delete
+                            </button>
+                            `;
+                        }
+                    }
+
+                ]
+
+            });
+
+        }
+
+
+
+        $("#createUserForm").submit(async function (e) {
+            e.preventDefault();
+
+            const form = e.target;
+
+            const payload = {
+                    username: form.username.value,
+                    fullname: form.fullname.value,
+                    password: form.password.value
+                }
+            };
+
+            const response = await fetch("/api/user", {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                               Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'User berhasil dibuat',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+
+                $("#createUser").modal("hide");
+
+                form.reset();
+
+                loadUsers();
+                });
+
+            } else {
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Create User gagal'
+                });
+            }
+
+        });
+
+
+        async function deleteUser(id) {
+
+            if (!confirm("Delete user ini?"))
+                return;
+
+
+            const response = await fetch(`/api/user/${id}`, {
+                method: "DELETE",
+                credentials: "include"
+            });
+
+            if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'User berhasil dihapus',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+
+                loadUsers();
+                });
+
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Delete user gagal'
+                });
+            }
+
+        }
+
+                $('#createUser').on('shown.bs.modal', function () {
+
+            const data = table.rows().data().toArray();
+
+            generateUserId(data);
+
+        });
+
+    </script>
+</body>

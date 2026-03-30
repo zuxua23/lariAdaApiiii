@@ -16,7 +16,7 @@ public class Location
 
     [Required]
     [Column("loc_name")]
-    public string name { get; set; }
+    public string Name { get; set; }
 
     [Required]
     [Column("loc_desc")]
@@ -36,5 +36,5 @@ public class Location
     [Column("updated_at")]
     public DateTime? UpdatedAt { get; set; }
     [Column("isDelete")]
-    public int? IsDelete { get; set; }
+    public bool IsDelete { get; set; } = false;
 }

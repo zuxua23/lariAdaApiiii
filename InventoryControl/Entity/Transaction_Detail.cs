@@ -8,11 +8,11 @@ public class Transaction_Detail
 {
     [Key]
     [Column("trs_detail_id")]
-    public string TransactionDetailId { get; set; }
+    public string TrdId { get; set; }
 
     [Required]
     [Column("trs_id")]
-    public string TransactionId { get; set; }
+    public string TrsId { get; set; }
 
     [Required]
     [Column("tag_id")]

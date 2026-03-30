@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InventoryControl.Entity;
 
 [Table("tb_Reader")]
+[Index(nameof(RdrId), IsUnique = true)]
 public class Reader
 {
     [Key]
@@ -12,15 +14,22 @@ public class Reader
 
     [Required]
     [Column("rdr_id")]
-    public string ReaderId { get; set; }
+    public string RdrId { get; set; }
 
     [Required]
     [Column("loc_id")]
-    public string Location { get; set; }
+    public string LocationId { get; set; }
 
     [Required]
     [Column("rdr_name")]
     public string Name { get; set; }
+
+    [Required]
+    [Column("ip_address")]
+    public string IpAddress { get; set; }
+
+    [Column("status")]
+    public string Status { get; set; } // READY, OFFLINE, IN_USE
 
     [Required]
     [Column("created_by")]
@@ -36,7 +45,7 @@ public class Reader
     [Column("updated_at")]
     public DateTime? UpdatedAt { get; set; }
     [Column("isDelete")]
-    public int? IsDelete { get; set; }
+    public bool IsDelete { get; set; } = false;
 
     public Location LocationNavigation { get; set; }
 }

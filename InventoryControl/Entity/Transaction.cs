@@ -8,10 +8,10 @@ public class Transaction
 {
     [Key]
     [Column("trs_id")]
-    public string TransactionId { get; set; }
+    public string TrsId { get; set; }
 
     [Column("trs_type")]
-    public string? TransactionType { get; set; }
+    public string? TrsType { get; set; }
 
     [Column("reference_id")]
     public string? ReferenceId { get; set; }

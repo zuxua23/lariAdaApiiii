@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using InventoryControl.DTO;
 using InventoryControl.Services.Interfaces;
-using StackExchange.Redis;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using System.Text.Json;
 
 namespace InventoryControl.Controllers.Api;
 
@@ -19,42 +18,32 @@ public class AuthApiController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDTO dto)
+    public async Task<IActionResult> Login(LoginDTO dto)
     {
-        var token = await _authService.LoginAsync(dto);
+        var result = await _authService.ValidateUserAsync(dto);
 
+        HttpContext.Session.SetString("UserId", result.UserId.ToString());
+        HttpContext.Session.SetString("Username", result.Username);
+
+        HttpContext.Session.SetString("Roles", JsonSerializer.Serialize(result.Roles));
+        HttpContext.Session.SetString("Permissions", JsonSerializer.Serialize(result.Permissions));
+        Console.WriteLine("Login Permissions:");
+        foreach (var p in result.Permissions)
+        {
+            Console.WriteLine(p);
+        }
         return Ok(new
         {
-            success = true,
-            token
+            message = "Login success"
         });
     }
-
-    [Authorize]
-    [HttpGet("me")]
-    public IActionResult Me()
-    {
-        return Ok(new
-        {
-            id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value,
-            userId = User.FindFirst("user_Id")?.Value,
-            name = User.Identity?.Name,
-
-        });
-    }
-
-    [Authorize]
     [HttpPost("logout")]
-    public async Task<IActionResult> Logout()
+    public IActionResult Logout()
     {
-        var userId = int.Parse(
-            User.FindFirstValue(ClaimTypes.NameIdentifier)
-        );
-
-        await _authService.LogoutAsync(userId);
-
-        return Ok(new { message = "Logout berhasil" });
+        HttpContext.Session.Clear();
+        return Ok(new { message = "Logout success" });
     }
+
 }
     
 

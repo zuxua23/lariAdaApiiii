@@ -1,0 +1,243 @@
+﻿<body class="hold-transition sidebar-mini layout-fixed">
+
+    <div class="wrapper">
+
+        @Html.Partial("_Navbar")
+        @Html.Partial("_Sidebar")
+
+        <div class="content-wrapper">
+
+            <div class="content-header">
+                <div class="container-fluid">
+
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">Inventory Dashboard</h1>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <section class="content">
+                <div class="container-fluid">
+
+                    <div class="row">
+
+                        <!-- TOTAL TAG -->
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info">
+                                <div class="inner">
+                                    <h3 id="totalTag">0</h3>
+                                    <p>Total Tag Today</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-tags"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PRINTED -->
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success">
+                                <div class="inner">
+                                    <h3 id="printedToday">0</h3>
+                                    <p>Printed Today</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-print"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PENDING -->
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-warning">
+                                <div class="inner">
+                                    <h3 id="pendingTag">0</h3>
+                                    <p>Pending Tag</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PRINTER -->
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-danger">
+                                <div class="inner">
+                                    <h3 id="printerStatus">Offline</h3>
+                                    <p>Printer Status</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-print"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="row">
+
+                        <!-- HT DEVICE -->
+                        <div class="col-md-4">
+
+                            <div class="card">
+
+                                <div class="card-header">
+                                    <h3 class="card-title">HT Device Status</h3>
+                                </div>
+
+                                <div class="card-body">
+
+                                    <ul id="htDevices" class="list-group">
+
+                                        <li class="list-group-item">
+                                            No device connected
+                                        </li>
+
+                                    </ul>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- REDIS QUEUE -->
+                        <div class="col-md-4">
+
+                            <div class="card">
+
+                                <div class="card-header">
+                                    <h3 class="card-title">Redis Queue</h3>
+                                </div>
+
+                                <div class="card-body">
+
+                                    <h2 id="redisQueue">0</h2>
+
+                                    <p>Items waiting to process</p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- RECENT ACTIVITY -->
+                        <div class="col-md-4">
+
+                            <div class="card">
+
+                                <div class="card-header">
+                                    <h3 class="card-title">Recent Activity</h3>
+                                </div>
+
+                                <div class="card-body">
+
+                                    <ul id="activityList" class="list-group">
+
+                                        <li class="list-group-item">
+                                            No activity
+                                        </li>
+
+                                    </ul>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+            </section>
+
+        </div>
+
+        @Html.Partial("_Footer")
+
+    </div>
+
+    @Html.Partial("_BaseScript")
+
+
+    <script>
+
+        async function loadDashboard(){
+
+        try{
+
+        const response = await fetch("/api/dashboard");
+
+        const data = await response.json();
+
+        document.getElementById("totalTag").innerText = data.totalTag;
+        document.getElementById("printedToday").innerText = data.printed;
+        document.getElementById("pendingTag").innerText = data.pending;
+        document.getElementById("printerStatus").innerText = data.printer;
+        document.getElementById("redisQueue").innerText = data.queue;
+
+        loadDevices(data.devices);
+        loadActivity(data.activity);
+
+        }catch(err){
+
+        console.log(err);
+
+        }
+
+        }
+
+
+        function loadDevices(devices){
+
+        const container = document.getElementById("htDevices");
+        container.innerHTML="";
+
+        devices.forEach(d => {
+
+        container.innerHTML += `
+        <li class="list-group-item">
+        ${d.name} - ${d.status}
+        </li>
+        `;
+
+        });
+
+        }
+
+
+        function loadActivity(list){
+
+        const container = document.getElementById("activityList");
+        container.innerHTML="";
+
+        list.forEach(a => {
+
+        container.innerHTML += `
+        <li class="list-group-item">
+        ${a.time} - ${a.action}
+        </li>
+        `;
+
+        });
+
+        }
+
+
+        loadDashboard();
+
+        setInterval(loadDashboard,5000);
+
+    </script>
+
+</body>
