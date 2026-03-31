@@ -17,7 +17,7 @@ public class DO
     public string? ScannerType { get; set; }
 
     [Column("status")]
-    public string? Status { get; set; }  //DRAFT → PREPARATION → READY → COMPLETED
+    public string? Status { get; set; }  //DRAFT → PREPARATION → COMPLETED
 
     [Column("created_by")]
     public string? CreatedBy { get; set; }

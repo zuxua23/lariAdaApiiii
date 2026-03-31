@@ -8,8 +8,24 @@
         <div class="content-wrapper">
 
             <div class="content-header">
+
                 <div class="container-fluid">
-                    <h1>Detail DO</h1>
+
+                    <div class="row mb-2">
+
+                        <div class="col-sm-6">
+                            <h1>Detail Picking List</h1>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/home">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="/pickinglist">Picking List</a></li>
+                                <li class="breadcrumb-item active">Detail</li>
+                            </ol>
+                        </div>
+
+                    </div>
                 </div>
             </div>
 
@@ -25,10 +41,11 @@
                                 <input id="doNumber" class="form-control">
                             </div>
 
-                            <div class="form-group">
-                                <label>Scanner Type</label>
-                                <input id="scannerType" class="form-control">
-                            </div>
+                            <select id="scannerType" class="form-control" required>
+                                <option value="">-- Pilih Scanner --</option>
+                                <option value="RFID">RFID</option>
+                                <option value="QR">QR</option>
+                            </select>
 
                             <div id="details"></div>
 
@@ -61,7 +78,7 @@
 
         async function load() {
 
-            const res = await fetch(`/api/do/${id}`, {
+            const res = await fetch(`/api/pickinglist/${id}`, {
                 method: "GET",
                 credentials: "include"
             });
@@ -76,17 +93,47 @@
             });
         }
 
-        function addDetail(itemId = "", qty = "") {
+           async function loadItemDropdown(selectedId = "") {
+
+            const res = await fetch("/api/item", {
+                method: "GET",
+                credentials: "include"
+            });
+
+            const data = await res.json();
+
+            let options = `<option value="">-- Select Item --</option>`;
+
+            data.forEach(item => {
+                options += `<option value="${item.id}">${item.itemName}</option>`;
+            });
+
+            let lastSelect = $(".item-select").last();
+            lastSelect.html(options);
+
+            if (selectedId) {
+                lastSelect.val(selectedId);
+            }
+        }
+        function addDetail(selectedId = "", qty = "") {
+
             $("#details").append(`
-                <div class="row mb-2">
+                <div class="row mb-2 detail-item align-items-center">
                     <div class="col">
-                        <input class="form-control itemId" value="${itemId}">
+                        <select class="form-control item-select">
+                            <option value="">-- Select Item --</option>
+                        </select>
                     </div>
                     <div class="col">
-                        <input class="form-control qty" value="${qty}">
+                        <input class="form-control qty" value="${qty}" type="number">
+                    </div>
+                    <div class="col-2 text-center">
+                        <button type="button" class="btn btn-danger btn-sm remove-item">Hapus</button>
                     </div>
                 </div>
             `);
+
+            loadItemDropdown(selectedId);
         }
 
         async function updateDO() {

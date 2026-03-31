@@ -1,12 +1,12 @@
 ﻿namespace InventoryControl.DTO;
 
-public class DODTO
+public class PickingListDTO
 {
     public string DoNumber { get; set; } = null!;
     public string ScannerType { get; set; } = null!;
     public List<DODetailCreateDto> Details { get; set; } = new();
 }
-public class DOUpdateDTO
+public class PickingListUpdateDTO
 {
     public string DoId { get; set; } = null!;
     public string DoNumber { get; set; } = null!;

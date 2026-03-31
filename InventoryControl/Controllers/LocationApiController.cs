@@ -1,6 +1,7 @@
 ﻿using InventoryControl.DTO;
 using InventoryControl.Entity;
 using InventoryControl.Service.Interfaces;
+using InventoryControl.Utility;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,12 +21,14 @@ public class LocationApiController : ControllerBase
     }
 
     [HttpGet]
+    [AuthorizePermission]
     public async Task<IActionResult> Get()
     {
         return Ok(await _service.GetAllAsync());    
     }
 
     [HttpGet("{id}")]
+    [AuthorizePermission]
     public async Task<IActionResult> GetById(string id)
     {
         var data = await _service.GetByIdAsync(id);
@@ -36,6 +39,7 @@ public class LocationApiController : ControllerBase
     }
 
     [HttpPost]
+    [AuthorizePermission]
     public async Task<IActionResult> Create(LocationDTO dto)
     {
         var createdBy = Request.Headers["X-User-Id"].FirstOrDefault() ?? "system";
@@ -45,6 +49,7 @@ public class LocationApiController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [AuthorizePermission]
     public async Task<IActionResult> Update(string id, LocationDTO dto)
     {
         var updatedBy = Request.Headers["X-User-Id"].FirstOrDefault() ?? "system";
@@ -53,6 +58,7 @@ public class LocationApiController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [AuthorizePermission]
     public async Task<IActionResult> Delete(string id)
     {
         await _service.DeleteAsync(id);

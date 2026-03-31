@@ -1,6 +1,7 @@
 ﻿using InventoryControl.DTO;
 using InventoryControl.Entity;
 using InventoryControl.Service.Interfaces;
+using InventoryControl.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -11,21 +12,34 @@ namespace InventoryControl.Controllers;
 [Route("api/pickinglist")]
 public class PickingListApiController : ControllerBase
 {
-    private readonly IDOService _service;
+    private readonly IPickingListService _service;
 
-    public PickingListApiController(IDOService service)
+    public PickingListApiController(IPickingListService service)
     {
         _service = service;
     }
 
     [HttpGet]
+    [AuthorizePermission]
     public async Task<IActionResult> Get()
     {
         return Ok(await _service.GetAllAsync());
     }
 
+    [HttpGet("{id}")]
+    [AuthorizePermission]
+    public async Task<IActionResult> GetById(string id)
+    {
+        var data = await _service.GetByIdAsync(id);
+        if (data == null)
+            return NotFound();
+
+        return Ok(data);
+    }
+
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] DODTO request)
+    [AuthorizePermission]
+    public async Task<IActionResult> Create([FromBody] PickingListDTO request)
     {
         if (request.Details == null || !request.Details.Any())
             return BadRequest("Detail DO tidak boleh kosong");
@@ -38,12 +52,14 @@ public class PickingListApiController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(string id, [FromBody] DOUpdateDTO dto)
+    [AuthorizePermission]
+    public async Task<IActionResult> Update(string id, [FromBody] PickingListUpdateDTO dto)
     {
         await _service.UpdateAsync(id, dto);
         return Ok(new { message = "DO berhasil diupdate" });
     }
     [HttpDelete("{id}")]
+    [AuthorizePermission]
     public async Task<IActionResult> Delete(string id)
     {
         await _service.DeleteAsync(id);
@@ -51,6 +67,7 @@ public class PickingListApiController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [AuthorizePermission]
     public async Task<IActionResult> UpdateStatus(string id, DOStatusUpdateDto dto)
     {
         await _service.UpdateStatusAsync(id, dto.Status);

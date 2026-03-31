@@ -1,10 +1,8 @@
 @using InventoryControl.Utility
 
-<aside class="main-sidebar sidebar-light-primary elevation-4">
-
-    <a href="/home/index" class="brand-link">
-        <img src="~/img/logo-nci-pt.svg" width="100px">
-        <span class="brand-text font-weight-light">Inventory Control</span>
+<aside class="main-sidebar sidebar-light-primary elevation-2 sidebar-light-industrial">
+    <a href="/home" class="brand-link">
+        <img src="~/img/sato.svg" alt="Sato logo">
     </a>
 
     <div class="sidebar">
@@ -16,7 +14,7 @@
                 <!-- DASHBOARD -->
                 <li class="nav-item">
                     <a asp-controller="Home" asp-action="Index"
-                       class="nav-link @(ViewData["pages"] == "dashboard" ? "active" : "")">
+                       class="nav-link @(ViewData["pages"] == "home" ? "active" : "")">
                         <i class="nav-icon fas fa-tachometer-alt"></i>
                         <p>Dashboard</p>
                     </a>
@@ -112,10 +110,10 @@
 
 
                 <!-- PICKING -->
-                @if (PermissionHelper.HasPermission(Context, "STOCK_PREPARATION"))
+                @if (PermissionHelper.HasPermission(Context, "PICKINGLIST_GET"))
                 {
                     <li class="nav-item">
-                        <a asp-route="PickingList"
+                        <a asp-controller="PickingList"
                            class="nav-link @(ViewData["pages"] == "pickinglist" ? "active" : "")">
                             <i class="nav-icon fas fa-edit"></i>
                             <p>Picking</p>
@@ -151,9 +149,8 @@
 
 
                 <!-- LOGOUT -->
-                <li class="nav-item">
-                    <a asp-route="auth-logout"
-                       class="nav-link">
+                <li class="nav-item logout-item">
+                    <a href="#" onclick="logoutConfirm()" class="nav-link">
                         <i class="nav-icon fas fa-sign-out-alt"></i>
                         <p>Logout</p>
                     </a>
@@ -164,5 +161,22 @@
         </nav>
 
     </div>
-
+    <script>
+        function logoutConfirm() {
+            Swal.fire({
+                title: "Logout?",
+                text: "Keluar dari sistem?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#6c757d",
+                cancelButtonColor: "#dc3545",
+                confirmButtonText: "Logout",
+                cancelButtonText: "Batal"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/logout";
+                }
+            });
+        }
+    </script>
 </aside>

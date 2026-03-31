@@ -29,12 +29,12 @@ public class SeedAccess
     ("STOCK_PREPARATION", "Stock Preparation", "PER008"),
     ("STOCK_OUT", "Stock Out", "PER009"),
 
-    // DO
-    ("DO_GET", "View DO", "PER010"),
-    ("DO_CREATE", "Create DO", "PER011"),
-    ("DO_UPDATE", "Update DO", "PER012"),
-    ("DO_UPDATE_STATUS", "Update DO", "PER030"),
-    ("DO_DELETE", "Delete DO", "PER031"),
+    // PICKINGLIST
+    ("PICKINGLIST_GET", "View PICKINGLIST", "PER010"),
+    ("PICKINGLIST_CREATE", "Create PICKINGLIST", "PER011"),
+    ("PICKINGLIST_UPDATE", "Update PICKINGLIST", "PER012"),
+    ("PICKINGLIST_UPDATE_STATUS", "Update PICKINGLIST", "PER030"),
+    ("PICKINGLIST_DELETE", "Delete PICKINGLIST", "PER031"),
 
     // LOCATION
     ("LOCATION_GET", "View Location", "PER013"),

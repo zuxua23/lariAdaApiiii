@@ -2,6 +2,7 @@
 using InventoryControl.Entity;
 using InventoryControl.Service.Implementations;
 using InventoryControl.Service.Interfaces;
+using InventoryControl.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,12 +21,14 @@ public class ReaderApiController : ControllerBase
     }
 
     [HttpGet]
+    [AuthorizePermission]
     public async Task<IActionResult> Get()
     {
         return Ok(await _service.GetAllAsync());
     }
 
     [HttpGet("{id}")]
+    [AuthorizePermission]
     public async Task<IActionResult> GetById(string id)
     {
         var reader = await _service.GetByIdAsync(id);
@@ -35,6 +38,7 @@ public class ReaderApiController : ControllerBase
     }
 
     [HttpPost]
+    [AuthorizePermission]
     public async Task<IActionResult> Create(ReaderDto dto)
     {
         var user = User.Identity?.Name ?? "system";
@@ -43,6 +47,7 @@ public class ReaderApiController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [AuthorizePermission]
     public async Task<IActionResult> Delete(string id)
     {
         await _service.DeleteAsync(id);
@@ -50,6 +55,7 @@ public class ReaderApiController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [AuthorizePermission]
     public async Task<IActionResult> Update(string id, ReaderDto dto)
     {
         var user = User.Identity?.Name ?? "system";

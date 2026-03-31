@@ -1,106 +1,196 @@
-﻿<body class="hold-transition login-page">
+﻿
 
-    <div class="login-box">
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@ViewData["Title"] - Inventory Control</title>
 
-        <div class="card card-outline card-primary">
+    <!-- External CSS FILE -->
+    <link rel="stylesheet" href="~/css/login.css">
 
-            <div class="card-header text-center">
-                <img src="~/img/logo_login.svg" width="200px" />
-                <h2>Inventory Control</h2>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Animated Background Particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Main Login Container - Side-by-Side Layout -->
+    <div class="login-container">
+        <!-- LEFT SIDE: Branding & Logo -->
+        <div class="login-branding">
+            <div class="logo-container">
+                <!-- YOUR LOGO -->
+                <img src="@Url.Content("~/img/logo_loginv2.svg")" class="login-logo" alt="Inventory Control Logo">
             </div>
 
-            <div class="card-body">
-
-                <form id="loginForm">
-
-                    <div class="input-group mb-3">
-                        <input type="text"
-                               class="form-control"
-                               placeholder="Username"
-                               id="username"
-                               required>
-
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-user"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="input-group mb-3">
-                        <input type="password"
-                               class="form-control"
-                               placeholder="Password"
-                               id="password"
-                               required>
-
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-lock"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-
-                        <div class="col-12">
-                            <button type="submit"
-                                    class="btn btn-primary btn-block">
-                                Sign In
-                            </button>
-                        </div>
-
-                    </div>
-
-                </form>
-
-                <div class="text-danger mt-2" id="loginError"></div>
-
+            <div class="branding-content">
+                <h1 class="branding-title">Inventory Control</h1>
             </div>
-
         </div>
 
+        <!-- RIGHT SIDE: Login Form -->
+        <div class="login-form">
+            <!-- Form Header -->
+            <div class="form-header">
+                <h2 class="form-title">Welcome Back</h2>
+                <p class="form-subtitle">Please sign in to continue</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm">
+                <!-- Username Input -->
+                <div class="input-group">
+                    <input type="text"
+                           class="form-control"
+                           id="username"
+                           placeholder=" "
+                           required
+                           autocomplete="username">
+                    <i class="fas fa-user input-icon"></i>
+                </div>
+
+                <!-- Password Input -->
+                <div class="input-group">
+                    <input type="password"
+                           class="form-control"
+                           id="password"
+                           placeholder=" "
+                           required
+                           autocomplete="current-password">
+                    <i class="fas fa-lock input-icon"></i>
+                    <i class="fas fa-eye-slash password-toggle" id="togglePassword"></i>
+                </div>
+
+                <!-- Sign In Button -->
+                <button type="submit" class="btn-login" id="loginBtn">
+                    Sign In
+                </button>
+            </form>
+
+            <!-- Error Message Display -->
+            <div class="login-error" id="loginError"></div>
+        </div>
     </div>
 
-    @Html.Partial("_BaseScript")
+    <!-- Your Existing Base Script -->
+    @Html.PartialAsync("_BaseScript")
 
+    <!-- JavaScript -->
     <script>
+        // 1. Create Animated Background Particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 45; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = (Math.random() * 15).toFixed(1) + 's';
+                particle.style.animationDuration = (12 + Math.random() * 10).toFixed(1) + 's';
+                particle.style.width = (2 + Math.random() * 6) + 'px';
+                particle.style.height = particle.style.width;
+                container.appendChild(particle);
+            }
+        }
 
-        document.getElementById("loginForm").addEventListener("submit", async function(e){
+        // 2. Password Visibility Toggle
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordField = document.getElementById('password');
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
 
+            // Toggle eye icon
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+
+        // 3. YOUR ORIGINAL LOGIN API - ENHANCED
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
+            // DOM Elements
+            const errorDiv = document.getElementById('loginError');
+            const loginBtn = document.getElementById('loginBtn');
+
+            // Reset previous state
+            errorDiv.style.display = 'none';
+            loginBtn.disabled = true;
+            loginBtn.classList.add('loading');
+
+            // Form data
             const data = {
-                username: document.getElementById("username").value,
-                password: document.getElementById("password").value
+                username: document.getElementById('username').value.trim(),
+                password: document.getElementById('password').value
             };
 
-            try{
+            // Client-side validation
+            if (!data.username || !data.password) {
+                errorDiv.textContent = 'Please enter username and password';
+                errorDiv.style.display = 'block';
+                loginBtn.disabled = false;
+                loginBtn.classList.remove('loading');
+                return;
+            }
 
-                const response = await fetch("/auth/login", {
-                    method: "POST",
-                    credentials: "include",
+            try {
+                // YOUR EXACT API CALL
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    credentials: 'include',
                     headers: {
-                        "Content-Type": "application/json"
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(data)
                 });
 
-                if(!response.ok){
-                    document.getElementById("loginError").innerText = "Login gagal";
-                    return;
+                if (!response.ok) {
+                    // Handle API error
+                    const errorData = await response.json().catch(() => ({}));
+                    errorDiv.textContent = errorData.message || 'Login gagal';
+                    errorDiv.style.display = 'block';
+                } else {
+                    // Success - redirect
+                    window.location.href = '/home';
                 }
-
-
-                window.location.href = "/home/index";
-
+            } catch (error) {
+                console.error('Login Error:', error);
+                errorDiv.textContent = 'Connection error. Please try again.';
+                errorDiv.style.display = 'block';
+            } finally {
+                // Reset button
+                loginBtn.disabled = false;
+                loginBtn.classList.remove('loading');
             }
-            catch(err){
-                document.getElementById("loginError").innerText = "Server error";
-            }
-
         });
 
-    </script>
+        // 4. UX Enhancements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-focus username
+            document.getElementById('username').focus();
 
+            // Enter key submits form
+            document.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !document.getElementById('loginBtn').disabled) {
+                    document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+                }
+            });
+
+            // Create particles
+            createParticles();
+        });
+
+        // 5. Input focus effects
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+    </script>
 </body>
+</html>

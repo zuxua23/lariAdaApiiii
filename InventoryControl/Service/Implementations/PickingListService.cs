@@ -7,11 +7,11 @@ using InventoryControl.Service.Interfaces;
 using InventoryControl.Utility;
 using Microsoft.EntityFrameworkCore;
 
-public class DOService : IDOService
+public class PickingListService : IPickingListService
 {
     private readonly AppDBContext _db;
 
-    public DOService(AppDBContext db)
+    public PickingListService(AppDBContext db)
     {
         _db = db;
     }
@@ -68,7 +68,7 @@ public class DOService : IDOService
 
     }
 
-    public async Task CreateAsync(DODTO request, string createdBy)
+    public async Task CreateAsync(PickingListDTO request, string createdBy)
     {
         try
         {
@@ -104,7 +104,7 @@ public class DOService : IDOService
         }
         
     }
-    public async Task UpdateAsync(string id, DOUpdateDTO dto)
+    public async Task UpdateAsync(string id, PickingListUpdateDTO dto)
     {
         try
         {

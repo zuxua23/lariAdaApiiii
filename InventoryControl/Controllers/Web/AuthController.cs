@@ -10,8 +10,16 @@ public class AuthController : Controller
         var user = HttpContext.Session.GetString("UserId");
 
         if (user != null)
-            return Redirect("/home/index");
+            return Redirect("/home");
 
         return View();
+    }
+
+    [HttpGet("/logout")]
+    public IActionResult Logout()
+    {
+        HttpContext.Session.Clear(); 
+
+        return Redirect("/login");
     }
 }

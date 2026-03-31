@@ -3,12 +3,12 @@ using InventoryControl.Entity;
 
 namespace InventoryControl.Service.Interfaces;
 
-public interface IDOService
+public interface IPickingListService
 {
     Task<List<DOResponseDto>> GetAllAsync();
     Task<DO?> GetByIdAsync(string id);
-    Task CreateAsync(DODTO dto, string createdBy);
-    Task UpdateAsync(string id, DOUpdateDTO dto);
+    Task CreateAsync(PickingListDTO dto, string createdBy);
+    Task UpdateAsync(string id, PickingListUpdateDTO dto);
     Task DeleteAsync(string id);
     Task UpdateStatusAsync(string id, string status);
 }

@@ -4,7 +4,7 @@ namespace InventoryControl.Controllers.Web;
 
 public class HomeController : Controller
 {
-    [HttpGet("/home/index")]
+    [HttpGet("/home")]
     public IActionResult Index()
     {
         return View();

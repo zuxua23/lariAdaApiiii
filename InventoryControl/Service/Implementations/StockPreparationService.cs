@@ -116,6 +116,11 @@ public class StockPreparationService : IStockPreparationService
                 CreatedAt = DateTime.UtcNow
             });
 
+            if (doData.Status == "DRAFT")
+            {
+                doData.Status = "PREPARATION";
+            }
+
             await _db.SaveChangesAsync();
             await trx.CommitAsync();
 

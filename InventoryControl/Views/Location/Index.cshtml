@@ -2,6 +2,10 @@
 
     <div class="wrapper">
 
+        <div class="preloader flex-column justify-content-center align-items-center">
+            <img class="animation__shake" src="~/img/sato.svg" height="200">
+        </div>
+
         @Html.Partial("_Navbar")
         @Html.Partial("_Sidebar")
 
@@ -17,7 +21,7 @@
 
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="/home">Dashboard</a></li>
                                 <li class="breadcrumb-item active">Location</li>
                             </ol>
                         </div>

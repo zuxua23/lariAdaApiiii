@@ -2,24 +2,16 @@
 
 namespace InventoryControl.Controllers.Web;
 
-public class PickingListController : Controller
+public class PrintTagController : Controller
 {
-    [HttpGet("/pickinglist")]
+    [HttpGet("/printtag")]
     public IActionResult Index()
     {
         var user = HttpContext.Session.GetString("UserId");
         if (user == null)
             return Redirect("/login");
-        ViewData["pages"] = "pickinglist";
+        ViewData["pages"] = "print-tag";
         ViewData["parent"] = "";
         return View();
     }
-
-    [HttpGet("/pickinglist/detail")]
-    public IActionResult Detail(string id)
-    {
-        ViewData["id"] = id;
-        return View();
-    }
 }
-
