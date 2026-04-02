@@ -11,15 +11,15 @@ namespace InventoryControl.Services.Implementations
     public class AuthService : IAuthService
     {
         private readonly AppDBContext _db;
+        private readonly JwtTokenHelper _jwtHelper;
 
-        public AuthService(
-            AppDBContext db)
+        public AuthService(AppDBContext db, JwtTokenHelper jwtHelper)
         {
             _db = db;
- 
+            _jwtHelper = jwtHelper;
         }
 
-      
+
         public async Task<LoginResultDto> ValidateUserAsync(LoginDTO dto)
         {
             var user = await _db.Users
@@ -54,6 +54,20 @@ namespace InventoryControl.Services.Implementations
                 Permissions = permissions
             };
         }
+        public async Task<string> GenerateTokenAsync(LoginResultDto user)
+        {
+            var entityUser = await _db.Users
+                .FirstOrDefaultAsync(u => u.UserId == user.UserId);
 
+            if (entityUser == null)
+                throw new Exception("User not found");
+
+            return await _jwtHelper.GenerateTokenAsync(
+                entityUser,
+                user.Permissions,
+                user.Roles
+            );
+        }
     }
 }
+

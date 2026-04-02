@@ -4,46 +4,76 @@ using InventoryControl.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 
-namespace InventoryControl.Controllers.Api;
+namespace InventoryControl.Controllers;
 
-[ApiController]
-[Route("auth")]
-public class AuthApiController : ControllerBase
+public class AuthController : Controller
 {
     private readonly IAuthService _authService;
 
-    public AuthApiController(IAuthService authService)
+    public AuthController(IAuthService authService)
     {
         _authService = authService;
     }
 
-    [HttpPost("login")]
+    public IActionResult Index()
+    {
+        ViewData["pages"] = "Auth";
+        return View();
+    }
+
     public async Task<IActionResult> Login(LoginDTO dto)
     {
-        var result = await _authService.ValidateUserAsync(dto);
-
-        HttpContext.Session.SetString("UserId", result.UserId.ToString());
-        HttpContext.Session.SetString("Username", result.Username);
-
-        HttpContext.Session.SetString("Roles", JsonSerializer.Serialize(result.Roles));
-        HttpContext.Session.SetString("Permissions", JsonSerializer.Serialize(result.Permissions));
-        Console.WriteLine("Login Permissions:");
-        foreach (var p in result.Permissions)
+        try
         {
-            Console.WriteLine(p);
+            var result = await _authService.ValidateUserAsync(dto);
+
+            // SESSION (WEB)
+            HttpContext.Session.SetString("UserId", result.UserId.ToString());
+            HttpContext.Session.SetString("Username", result.Username);
+            HttpContext.Session.SetString("Roles", JsonSerializer.Serialize(result.Roles));
+            HttpContext.Session.SetString("Permissions", JsonSerializer.Serialize(result.Permissions));
+            HttpContext.Session.SetString("is_login", "OK");
+
+            return RedirectToAction("Index", "Dashboard");
         }
-        return Ok(new
+        catch (Exception e)
         {
-            message = "Login success"
-        });
+            TempData["is_error"] = e.Message;
+            return RedirectToAction("Index");
+        }
     }
-    [HttpPost("logout")]
+
     public IActionResult Logout()
     {
         HttpContext.Session.Clear();
-        return Ok(new { message = "Logout success" });
+        return RedirectToAction("Index");
     }
 
-}
-    
 
+    public async Task<IActionResult> LoginHT([FromBody] LoginDTO dto)
+    {
+        try
+        {
+            var result = await _authService.ValidateUserAsync(dto);
+            var token = await _authService.GenerateTokenAsync(result);
+
+            return Ok(new
+            {
+                token = token,
+                token_type = "Bearer",
+                user = result.Username,
+                roles = result.Roles,
+                permissions = result.Permissions
+            });
+        }
+        catch (Exception e)
+        {
+            return BadRequest(new { message = e.Message });
+        }
+    }
+
+    public IActionResult LogoutHT()
+    {
+        return Ok(new { message = "Logout success (client delete token)" });
+    }
+}

@@ -4,8 +4,13 @@ namespace InventoryControl.Controllers.Web;
 
 public class HomeController : Controller
 {
-    [HttpGet("/home")]
+
     public IActionResult Index()
+    {
+        return View();
+    }
+
+    public IActionResult Privacy()
     {
         return View();
     }

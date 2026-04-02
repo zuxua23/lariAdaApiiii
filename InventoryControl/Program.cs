@@ -1,5 +1,6 @@
 ﻿using InventoryControl.Database;
 using InventoryControl.Database.Seeder;
+using InventoryControl.Routes;
 using InventoryControl.Utility;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -31,6 +32,7 @@ builder.Services.AddSession(options =>
 #region DEPENDENCY INJECTION
 builder.Services.AddApplicationServices();
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<JwtTokenHelper>();
 #endregion
 
 #region MVC + API
@@ -130,12 +132,10 @@ app.Use(async (context, next) =>
 //#endregion
 
 #region ROUTING
-// API
-app.MapControllers();
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Auth}/{action=Login}/{id?}"
-);
+
+Web.Map(app);
+
+Api.Map(app);
 #endregion
 
 app.Run();

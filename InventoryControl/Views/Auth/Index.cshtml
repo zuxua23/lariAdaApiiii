@@ -45,7 +45,7 @@
             </div>
 
             <!-- Login Form -->
-            <form id="loginForm">
+            <form asp-route="auth-login" method="post">
                 <!-- Username Input -->
                 <div class="input-group">
                     <input type="text"
@@ -110,65 +110,7 @@
             this.classList.toggle('fa-eye');
             this.classList.toggle('fa-eye-slash');
         });
-
-        // 3. YOUR ORIGINAL LOGIN API - ENHANCED
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            // DOM Elements
-            const errorDiv = document.getElementById('loginError');
-            const loginBtn = document.getElementById('loginBtn');
-
-            // Reset previous state
-            errorDiv.style.display = 'none';
-            loginBtn.disabled = true;
-            loginBtn.classList.add('loading');
-
-            // Form data
-            const data = {
-                username: document.getElementById('username').value.trim(),
-                password: document.getElementById('password').value
-            };
-
-            // Client-side validation
-            if (!data.username || !data.password) {
-                errorDiv.textContent = 'Please enter username and password';
-                errorDiv.style.display = 'block';
-                loginBtn.disabled = false;
-                loginBtn.classList.remove('loading');
-                return;
-            }
-
-            try {
-                // YOUR EXACT API CALL
-                const response = await fetch('/auth/login', {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-
-                if (!response.ok) {
-                    // Handle API error
-                    const errorData = await response.json().catch(() => ({}));
-                    errorDiv.textContent = errorData.message || 'Login gagal';
-                    errorDiv.style.display = 'block';
-                } else {
-                    // Success - redirect
-                    window.location.href = '/home';
-                }
-            } catch (error) {
-                console.error('Login Error:', error);
-                errorDiv.textContent = 'Connection error. Please try again.';
-                errorDiv.style.display = 'block';
-            } finally {
-                // Reset button
-                loginBtn.disabled = false;
-                loginBtn.classList.remove('loading');
-            }
-        });
+       
 
         // 4. UX Enhancements
         document.addEventListener('DOMContentLoaded', function() {
