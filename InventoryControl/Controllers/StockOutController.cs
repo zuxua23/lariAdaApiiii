@@ -44,11 +44,11 @@ public class StockOutController : ControllerBase
     }
 
     [HttpPost("start")]
-    public IActionResult Start(StartScanDto dto)
+    public async Task<IActionResult> StartAsync(StartScanDto dto)
     {
         RfidSession.Set(dto.ReaderId, dto.DoId);
-
-        _readerService.StartReader(dto.ReaderId, dto.IpAddress);
+        Console.WriteLine("IP" + dto.IpAddress);
+        await _readerService.StartReader(dto.ReaderId, dto.IpAddress);
 
         return Ok("Reader started");
     }

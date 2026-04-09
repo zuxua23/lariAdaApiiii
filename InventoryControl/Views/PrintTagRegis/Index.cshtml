@@ -63,16 +63,7 @@
                                             <tr>
                                                 <td>1</td>
                                                 <td>
-                                                    <select class="form-control item-select" data-row="1">
-                                                        <option value="">-- Pilih Item --</option>
-                                                        <option value="ITM001" data-name="Baju Kaos Polos">Baju Kaos Polos</option>
-                                                        <option value="ITM002" data-name="Celana Jeans">Celana Jeans</option>
-                                                        <option value="ITM003" data-name="Topi Snapback">Topi Snapback</option>
-                                                        <option value="ITM004" data-name="Sepatu Sport">Sepatu Sport</option>
-                                                        <option value="ITM005" data-name="Jaket Hoodie">Jaket Hoodie</option>
-                                                        <option value="ITM006" data-name="Tas Ransel">Tas Ransel</option>
-                                                        <option value="ITM007" data-name="Jam Tangan">Jam Tangan</option>
-                                                    </select>
+                                                    <select class="form-control item-select" data-row="1" id="firstItemSelect"></select>
                                                 </td>
                                                 <td>
                                                     <input type="number" class="form-control qty-input" min="1" max="100" value="1">
@@ -96,29 +87,14 @@
                         <div class="col-md-4">
                             <div class="card shadow">
                                 <div class="card-header bg-success text-white">
-                                    <h6 class="mb-0"><i class="fas fa-print mr-2"></i>Print Settings</h6>
+                                    <h6 class="mb-0"><i class="fas fa-print mr-2"></i>Print</h6>
                                 </div>
                                 <div class="card-body">
-                                    <div class="form-group">
-                                        <label>Printer</label>
-                                        <select class="form-control printer-select">
-                                            <option value="">-- Pilih Printer --</option>
-                                            <option value="Zebra_ZP450">Zebra ZP450</option>
-                                            <option value="Zebra_GK420">Zebra GK420</option>
-                                            <option value="Epson_TM_T88">Epson TM-T88</option>
-                                            <option value="Brother_QL800">Brother QL-800</option>
-                                            <option value="Default">Default Printer</option>
-                                        </select>
-                                    </div>
 
                                     <div class="form-group">
                                         <label>Total Tag</label>
                                         <span class="badge badge-primary badge-lg d-block p-2 text-center" id="totalTags">0</span>
                                     </div>
-
-                                    <button class="btn btn-success btn-block mb-2" onclick="generatePreview()">
-                                        <i class="fas fa-eye mr-2"></i>Preview
-                                    </button>
                                     <button class="btn btn-primary btn-block" onclick="printTags()">
                                         <i class="fas fa-print mr-2"></i>Print Tags
                                     </button>
@@ -127,20 +103,7 @@
                         </div>
                     </div>
 
-                    <!-- Preview Section -->
-                    <div class="card shadow mt-4" id="previewCard" style="display: none;">
-                        <div class="card-header bg-info text-white">
-                            <h6 class="mb-0"><i class="fas fa-tags mr-2"></i>Label Preview</h6>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="print-preview-container" id="previewContainer">
-                                <div class="text-center p-4 text-muted">
-                                    <i class="fas fa-eye fa-3x mb-3 opacity-50"></i>
-                                    <p>Click "Preview" to see label preview</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                   
                 </div>
             </section>
 
@@ -154,38 +117,59 @@
     @Html.Partial("_BaseScript")
 
     <script>
+                $(document).ready(function () {
+            loadItemsDropdown(document.getElementById("firstItemSelect"));
+        });
+                async function loadItemsDropdown(selectElement) {
 
+            const response = await fetch("/api/item", {
+                method: "GET",
+                credentials: "include"
+            });
+
+            if (response.status === 401) {
+                window.location.href = "/login";
+                return;
+            }
+
+            const data = await response.json();
+
+            let options = `<option value="">-- Pilih Item --</option>`;
+
+            data.forEach(item => {
+                options += `<option value="${item.id}">${item.itemName}</option>`;
+            });
+
+            selectElement.innerHTML = options;
+        }
             let rowCounter = 1;
 
-        function addRow() {
+               function addRow() {
             rowCounter++;
             const tbody = document.querySelector('#tagTable tbody');
-            const newRow = `
-                <tr>
-                    <td>${rowCounter}</td>
-                    <td>
-                        <select class="form-control item-select" data-row="${rowCounter}">
-                            <option value="">-- Pilih Item --</option>
-                            <option value="ITM001" data-name="Baju Kaos Polos">Baju Kaos Polos</option>
-                            <option value="ITM002" data-name="Celana Jeans">Celana Jeans</option>
-                            <option value="ITM003" data-name="Topi Snapback">Topi Snapback</option>
-                            <option value="ITM004" data-name="Sepatu Sport">Sepatu Sport</option>
-                            <option value="ITM005" data-name="Jaket Hoodie">Jaket Hoodie</option>
-                            <option value="ITM006" data-name="Tas Ransel">Tas Ransel</option>
-                            <option value="ITM007" data-name="Jam Tangan">Jam Tangan</option>
-                        </select>
-                    </td>
-                    <td>
-                        <input type="number" class="form-control qty-input" min="1" max="100" value="1">
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-danger" onclick="removeRow(this)">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
+
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${rowCounter}</td>
+                <td>
+                    <select class="form-control item-select"></select>
+                </td>
+                <td>
+                    <input type="number" class="form-control qty-input" min="1" max="100" value="1">
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-danger" onclick="removeRow(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
             `;
-            tbody.insertAdjacentHTML('beforeend', newRow);
+
+            tbody.appendChild(newRow);
+
+            const select = newRow.querySelector('.item-select');
+
+            loadItemsDropdown(select);
+
             updateTotalTags();
         }
 
@@ -210,74 +194,44 @@
             });
             document.getElementById('totalTags').textContent = total;
         }
-
-        function generatePreview() {
-            const previewContainer = document.getElementById('previewContainer');
-            const previewCard = document.getElementById('previewCard');
-
-            previewContainer.innerHTML = '';
-
-            let hasValidData = false;
-
-            document.querySelectorAll('.item-select').forEach((select, rowIndex) => {
-                const qtyInput = select.closest('tr').querySelector('.qty-input');
-                const itemCode = select.value;
-                const itemName = select.selectedOptions[0]?.dataset.name;
-
-                if (itemCode && qtyInput.value > 0) {
-                    hasValidData = true;
-
-                    for (let i = 0; i < parseInt(qtyInput.value); i++) {
-                        const rfidTag = `RFID-${itemCode}-${String(rowIndex + 1).padStart(3, '0')}-${String(i + 1).padStart(3, '0')}`;
-
-                        const label = document.createElement('div');
-                        label.className = 'label-preview';
-                        label.innerHTML = `
-                            <div class="rfid-tag">${rfidTag}</div>
-                            <div class="barcode-placeholder"></div>
-                            <div class="item-number">${itemCode}</div>
-                            <div class="item-name">${itemName}</div>
-                        `;
-                        previewContainer.appendChild(label);
-                    }
-                }
-            });
-
-            if (hasValidData) {
-                previewCard.style.display = 'block';
-                previewContainer.scrollTop = 0;
-            } else {
-                previewContainer.innerHTML = `
-                    <div class="text-center p-4 text-muted">
-                        <i class="fas fa-exclamation-triangle fa-3x mb-3 opacity-50"></i>
-                        <p>Pilih item dan masukkan quantity untuk melihat preview</p>
-                    </div>
-                `;
-                previewCard.style.display = 'block';
-            }
-        }
-
-        function printTags() {
-            const totalTags = document.getElementById('totalTags').textContent;
-            if (totalTags == '0') {
-                alert('⚠️ Tidak ada tag untuk dicetak. Pilih item dan quantity terlebih dahulu.');
-                return;
-            }
-
-            if (confirm(`Cetak ${totalTags} tag?`)) {
-                window.print();
-            }
-        }
-
-        // Event Listeners
-        document.addEventListener('change', function(e) {
-            if (e.target.classList.contains('item-select') || e.target.classList.contains('qty-input')) {
+                document.addEventListener('input', function (e) {
+            if (e.target.classList.contains('qty-input')) {
                 updateTotalTags();
             }
         });
 
-        // Initial calculation
-        updateTotalTags();
+        async function printTags() {
+            const rows = document.querySelectorAll('#tagTable tbody tr');
+
+            let payload = [];
+
+            rows.forEach(row => {
+                const itemId = row.querySelector('.item-select').value;
+                const qty = row.querySelector('.qty-input').value;
+
+                if (itemId && qty > 0) {
+                    payload.push({
+                        itemId: itemId,
+                        qty: parseInt(qty)
+                    });
+                }
+            });
+
+            const response = await fetch("/tag/print", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                alert("Print success!");
+            } else {
+                const err = await response.text();
+                alert("Print failed: " + err);
+            }
+        }
     </script>
 
 </body>

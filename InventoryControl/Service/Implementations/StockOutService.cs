@@ -209,12 +209,12 @@ public class StockOutService : IStockOutService
                       Required = d.QtyRequired ?? 0,
 
                       Reserved = _db.TransactionDetails
-                .Count(td => td.ItemId == d.ItemId &&
+                     .Count(td => td.ItemId == d.ItemId &&
                              td.Transaction.ReferenceId == doId &&
                              td.Transaction.TrsType == "STOCK_PREPARATION"),
 
                       Scanned = _db.TransactionDetails
-                .Count(td => td.ItemId == d.ItemId &&
+                     .Count(td => td.ItemId == d.ItemId &&
                              td.Transaction.ReferenceId == doId &&
                              td.Transaction.TrsType == "STOCK_OUT")
                   })
@@ -234,6 +234,7 @@ public class StockOutService : IStockOutService
 
         }
     }
+
     public async Task<ProgressDto> GetProgressAsync(string doId)
     {
         var total = await _db.TransactionDetails

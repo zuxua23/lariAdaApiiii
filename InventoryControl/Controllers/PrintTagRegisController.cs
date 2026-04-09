@@ -18,13 +18,21 @@ public class PrintTagRegisController: ControllerBase
         _service = service;
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Print(PrintTagDto dto)
+    [HttpPost("print")]
+    public async Task<IActionResult> Print([FromBody] List<PrintTagDto> dto)
     {
-        var user = User.Identity?.Name ?? "system";
-        var batch = await _service.PrintAsync(dto, user);
+        if (dto == null || !dto.Any())
+            return BadRequest("Data tidak boleh kosong");
 
-        return Ok(new { message = "Print berhasil", batchNo = batch });
+        var user = User.Identity?.Name ?? "system";
+
+        var batch = await _service.PrintBulkAsync(dto, user);
+
+        return Ok(new
+        {
+            message = "Print berhasil",
+            batchNo = batch
+        });
     }
 
     [HttpPost]

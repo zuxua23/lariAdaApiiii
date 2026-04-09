@@ -19,8 +19,8 @@
                                    style="font-size: 2.25rem; opacity: 0.8;"></i>
                             </div>
                             <div>
-                                <h1 class="h3 mb-1 text-dark font-weight-bold">Print Tag</h1>
-                                <p class="mb-0 text-muted small">Manage print tag process</p>
+                                <h1 class="h3 mb-1 text-dark font-weight-bold">Stock Out</h1>
+                                <p class="mb-0 text-muted small">Manage stock out process</p>
                             </div>
                         </div>
 
@@ -32,7 +32,7 @@
                                     </a>
                                 </li>
                                 <li class="breadcrumb-item active">
-                                    <i class="fas fa-clipboard-list mr-1"></i>Print Tag
+                                    <i class="fas fa-clipboard-list mr-1"></i>Stock Out
                                 </li>
                             </ol>
                         </nav>
@@ -179,11 +179,10 @@
             });
 
             const data = await response.json();
-            console.log($("#doIdSelect").val());
             let options = `<option value="">-- Select DO --</option>`;
-
+            console.log("Dropdown value:", $("#doIdSelect").val());
             data.forEach(data => {
-                options += `<option value="${data.id}">${data.doNumber}</option>`;
+                options += `<option value="${data.doId}">${data.doNumber}</option>`;
             });
 
             $("#doIdSelect").html(options);
@@ -197,13 +196,13 @@
             });
 
             const data = await response.json();
-
             let options = `<option value="">-- Select Reader --</option>`;
 
             data.forEach(data => {
-                options += `<option value="${data.id}">${data.rdrName}</option>`;
+        options += `<option value="${data.id}" data-ip="${data.ipAddress}">
+            ${data.rdrName}        </option>`;
             });
-
+            console.log("IP:", data.ipAddress);
             $("#rdrIdSelect").html(options);
         }
 
@@ -211,7 +210,7 @@
         let pollingInterval = null;
         let currentDo = null;
 
-                async function startScanning() {
+         async function startScanning() {
             const doId = $("#doIdSelect").val();
             const readerSelect = document.getElementById("rdrIdSelect");
             const readerId = readerSelect.value;
@@ -221,7 +220,7 @@
                 alert("Pilih DO dan Reader dulu");
                 return;
             }
-
+            console.log("FETCH DO ID:", doId);
             currentDo = doId; 
 
             await fetch('/stockout/start', {
@@ -258,7 +257,7 @@
         // POLLING
         async function startPolling(doId) {
             if (pollingInterval) clearInterval(pollingInterval);
-
+            console.log("FETCH DO ID:", doId);
             pollingInterval = setInterval(async () => {
                 try {
                     const res = await fetch(`/stockout/items?doId=${doId}`);
@@ -336,15 +335,21 @@
                 tagList.appendChild(div);
             });
         }
-                async function loadItems(doId) {
+
+         async function loadItems(doId) {
+            if (!doId || doId === "undefined") {
+            console.error("DO ID tidak valid:", doId);
+            return;
+            }
+            console.log("FETCH DO ID:", doId);
+
             const res = await fetch(`/stockout/items?doId=${doId}`);
                     if (!res.ok) {
             const text = await res.text();
-            console.error("DO SELECTED:", doId);
             console.error("API Error:", text);
             alert("Terjadi error di server");
             return;
-        }
+                }
             const items = await res.json();
 
             const tbody = document.getElementById("itemList");

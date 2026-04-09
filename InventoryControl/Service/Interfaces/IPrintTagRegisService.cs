@@ -4,7 +4,8 @@ namespace InventoryControl.Service.Interfaces;
 
 public interface IPrintTagRegisService
 {
-    Task<string> PrintAsync(PrintTagDto dto, string user);
+    Task PrintAsync(PrintTagDto dto, string user, string batchNo);
+    Task<string> PrintBulkAsync(List<PrintTagDto> list, string user);
     Task RegisterAsync(TagRegistrationDto dto, string user);
     Task<List<PrintHistoryResponseDto>> GetAvailableTagsAsync();
 }

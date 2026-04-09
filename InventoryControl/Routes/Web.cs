@@ -65,11 +65,11 @@ public static class Web
             .WithMetadata(new HttpMethodMetadata(new[] { "POST" }));
 
         app.MapControllerRoute(
-    name: "stockOut",
-    pattern: "/stockOut",
-    defaults: new { controller = "StockOut", action = "Index" })
-            .AddEndpointFilter(AuthFilter)
-    .WithMetadata(new HttpMethodMetadata(new[] { "GET" }));
+            name: "stockOut",
+            pattern: "/stockOut",
+            defaults: new { controller = "StockOut", action = "Index" })
+                    .AddEndpointFilter(AuthFilter)
+            .WithMetadata(new HttpMethodMetadata(new[] { "GET" }));
 
 
         app.MapControllerRoute("pickinglist", "/pickinglist",

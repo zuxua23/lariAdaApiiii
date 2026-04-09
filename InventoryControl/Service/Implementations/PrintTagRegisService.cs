@@ -1,12 +1,10 @@
-﻿using InTheHand.Net.Bluetooth;
-using InventoryControl.Database;
+﻿using InventoryControl.Database;
 using InventoryControl.DTO;
 using InventoryControl.Entity;
 using InventoryControl.Helpers;
 using InventoryControl.Service.Interfaces;
 using InventoryControl.Utility;
 using Microsoft.EntityFrameworkCore;
-using System.Net.Sockets;
 using System.Text;
 
 namespace InventoryControl.Service.Implementations;
@@ -20,7 +18,7 @@ public class PrintTagRegisService : IPrintTagRegisService
         _db = db;
     }
 
-    public async Task<string> PrintAsync(PrintTagDto dto, string user)
+    public async Task PrintAsync(PrintTagDto dto, string user, string batchNo)
     {
         Console.WriteLine("=== PRINT ASYNC KEPANGGIL ===");
 
@@ -29,7 +27,7 @@ public class PrintTagRegisService : IPrintTagRegisService
             if (dto.Qty <= 0)
                 throw new Exception("Qty harus lebih dari 0");
 
-            var batchNo = $"PRN-{DateTime.UtcNow:yyyyMMddHHmmss}";
+            //var batchNo = $"PRN-{DateTime.UtcNow:yyyyMMddHHmmss}";
 
             var item = await _db.Items.FirstOrDefaultAsync(x => x.Id == dto.ItemId);
             if (item == null)
@@ -49,8 +47,8 @@ public class PrintTagRegisService : IPrintTagRegisService
             if (location == null)
                 throw new Exception("Location STAGING tidak ditemukan");
 
-            var printerIp = "10.49.238.230";
-            var port = 9100;
+            //var printerIp = "10.49.238.230";
+            //var port = 9100;
 
             var filePath = Path.Combine(
                 Directory.GetCurrentDirectory(),
@@ -67,14 +65,18 @@ public class PrintTagRegisService : IPrintTagRegisService
 
                 var sbpl = BuildSBPL(epc, item.ItmId, qr, dto.Qty);
 
-                var bytes = SBPLStringToBytes(sbpl);
+                bool printed = RawPrinterHelper.SendStringToPrinter("SATO CL4NX Plus (SmaPri)", sbpl);
+                //var bytes = SBPLStringToBytes(sbpl);
 
                 Console.WriteLine("=== SBPL ===");
                 Console.WriteLine(sbpl);
                 Console.WriteLine("HEX:");
-                Console.WriteLine(string.Join(" ", bytes.Select(b => b.ToString("X2"))));
+                //Console.WriteLine(string.Join(" ", bytes.Select(b => b.ToString("X2"))));
 
-                bool printed = PW4NX_Helper.SendToPrinter(printerIp, 9100, bytes);
+                //bool printed = PW4NX_Helper.SendToPrinter(printerIp, 9100, bytes);
+
+                //var sbplString = Encoding.ASCII.GetString(bytes);
+
 
                 if (!printed)
                 {
@@ -114,13 +116,25 @@ public class PrintTagRegisService : IPrintTagRegisService
             }
 
             Console.WriteLine("=== PRINT SELESAI ===");
-            return batchNo;
+            //return batchNo;
         }
         catch (Exception ex)
         {
             Console.WriteLine("ERROR PRINT: " + ex.Message);
             throw;
         }
+    }
+
+    public async Task<string> PrintBulkAsync(List<PrintTagDto> list, string user)
+    {
+        var batchNo = $"PRN-{DateTime.UtcNow:yyyyMMddHHmmss}";
+
+        foreach (var dto in list)
+        {
+            await PrintAsync(dto, user, batchNo);
+        }
+
+        return batchNo;
     }
 
     //private byte[] LoadPrnAndReplace(string filePath, string itemName, string qr, int qty)
