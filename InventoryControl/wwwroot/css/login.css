@@ -483,6 +483,8 @@ body {
     .login-container {
         flex-direction: column !important;
         height: auto !important;
+        max-height: 90vh !important;
+        overflow-y: auto !important; 
         margin: 1.5rem 1rem !important;
         max-width: 420px !important;
         padding: 0 !important;

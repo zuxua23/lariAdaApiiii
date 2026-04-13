@@ -1,0 +1,497 @@
+<body class="hold-transition sidebar-mini layout-fixed">
+
+    <div class="wrapper">
+
+        @Html.Partial("_Navbar")
+        @Html.Partial("_Sidebar")
+        @Html.Partial("_Views")
+
+        <div class="content-wrapper">
+
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap mb-4">
+
+                        <div class="d-flex align-items-center">
+                            <div class="header-icon mr-3">
+                                <i class="fas fa-user-shield nav-icon text-primary"
+                                   style="font-size: 2.25rem; opacity: 0.8;"></i>
+                            </div>
+                            <div>
+                                <h1 class="h3 mb-1 text-dark font-weight-bold">Role Management</h1>
+                                <p class="mb-0 text-muted small">Manage Role</p>
+                            </div>
+                        </div>
+
+                        <nav class="modern-breadcrumb">
+                            <ol class="breadcrumb bg-transparent p-0 mb-0">
+                                <li class="breadcrumb-item">
+                                    <a href="/home" class="text-muted">
+                                        <i class="fas fa-home mr-1"></i>Dashboard
+                                    </a>
+                                </li>
+                                <li class="breadcrumb-item active">
+                                    <i class="fas fa-user-shield mr-1"></i>Role
+                                </li>
+                            </ol>
+                        </nav>
+
+                    </div>
+                </div>
+            </section>
+
+            <section class="content">
+                <div class="container-fluid">
+
+                    <div class="card card-primary card-outline shadow-lg">
+
+                        <div class="card-header bg-white border-0 pb-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h3 class="card-title font-weight-bold mb-0">
+                                    <i class="fas fa-list mr-2 text-primary"></i>
+                                    Role List
+                                </h3>
+                                <button class="btn btn-primary btn-icon-split"
+                                        data-toggle="modal"
+                                        data-target="#modalRole">
+                                    <span class="icon text-white-50">
+                                        <i class="fas fa-plus"></i>
+                                    </span>
+                                    <span class="text">Create</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card-body pt-3">
+                            <div class="table-responsive">
+                                <table id="datatablesIndex" class="table table-hover">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th class="text-center" width="60">#</th>
+                                            <th>Role ID</th>
+                                            <th>Role Name</th>
+                                            <th>Status</th>
+                                            <th class="text-center" width="160">Actions</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </section>
+
+        </div>
+
+        @Html.Partial("_Footer")
+
+    </div>
+
+    <!-- Modal Create / Edit Role -->
+    <div class="modal fade" id="modalRole">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 id="modalRoleTitle">Create Role</h5>
+                    <button class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <form id="roleForm">
+                    <input type="hidden" id="roleDbId" name="roleDbId">
+
+                    <div class="modal-body">
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label><i class="fas fa-hashtag mr-2"></i>Role ID</label>
+                                    <input type="text" id="roleId" name="roleId" class="form-control" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label><i class="fas fa-tag mr-2"></i>Role Name <span class="text-danger">*</span></label>
+                                    <input type="text" id="roleName" name="roleName" class="form-control" required placeholder="Enter role name...">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card card-outline card-primary mb-0">
+                            <div class="card-header bg-white">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                    <div>
+                                        <h6 class="font-weight-bold mb-0">
+                                            <i class="fas fa-lock mr-2 text-primary"></i>Setting Permissions
+                                        </h6>
+                                        <small class="text-muted">Minimum select 3 permissions</small>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div class="custom-control custom-checkbox mr-3">
+                                            <input type="checkbox" class="custom-control-input" id="selectAllCheck" onchange="toggleSelectAll(this.checked)">
+                                            <label class="custom-control-label font-weight-bold" for="selectAllCheck">Select All</label>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAll()">
+                                            <i class="fas fa-times mr-1"></i>Deselect All
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card-body">
+                                <div class="row" id="permissionsContainer">
+                                    <!-- Rendered dynamically by JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            <i class="fas fa-times mr-1"></i>Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-modern">
+                            <i class="fas fa-save mr-1"></i>Save
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    @Html.Partial("_BaseScript")
+
+    <style>
+        .permission-module-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            background: #fff;
+            transition: box-shadow 0.2s;
+        }
+        .permission-module-card:hover {
+            box-shadow: 0 2px 12px rgba(59, 130, 246, 0.1);
+        }
+        .permission-module-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .permission-module-header label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin: 0;
+            cursor: pointer;
+        }
+        .permission-ops {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 8px;
+        }
+        .permission-ops .custom-control-label {
+            font-size: 0.8125rem;
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+
+        // ============================================================
+        // CONFIG — sesuaikan modules & operations dengan kebutuhan
+        // ============================================================
+        const MODULES = [
+            { key: "stockIn",        label: "Stock IN" },
+            { key: "stockOut",       label: "Stock OUT" },
+            { key: "stockPrep",      label: "Stock Prep" },
+            { key: "stockTaking",    label: "Stock Taking" },
+            { key: "manageUser",     label: "Manage User" },
+            { key: "stockTakingAdj", label: "Stock Taking & Adj" },
+            { key: "manageItem",     label: "Manage Item" },
+            { key: "manageLocation", label: "Manage Location" },
+        ];
+
+        const OPERATIONS = ["Create", "View", "Update", "Delete", "Detail", "Export"];
+
+        // ============================================================
+
+        let table;
+
+        $(document).ready(function () {
+            renderPermissions();
+            loadRoles();
+        });
+
+        // ---- Render Permission Checkboxes ----
+        function renderPermissions(existingPermissions = {}) {
+            const container = document.getElementById("permissionsContainer");
+            container.innerHTML = "";
+
+            MODULES.forEach(mod => {
+                const colDiv = document.createElement("div");
+                colDiv.className = "col-xl-3 col-lg-4 col-md-6";
+
+                const opsHtml = OPERATIONS.map(op => {
+                    const id = `perm_${mod.key}_${op}`;
+                    const checked = existingPermissions[mod.key]?.includes(op) ? "checked" : "";
+                    return `
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox"
+                                   class="custom-control-input op-check"
+                                   id="${id}"
+                                   data-module="${mod.key}"
+                                   data-op="${op}"
+                                   ${checked}
+                                   onchange="syncModuleHeader('${mod.key}'); syncSelectAll()">
+                            <label class="custom-control-label" for="${id}">${op}</label>
+                        </div>`;
+                }).join("");
+
+                const allChecked = OPERATIONS.every(op => existingPermissions[mod.key]?.includes(op));
+
+                colDiv.innerHTML = `
+                    <div class="permission-module-card">
+                        <div class="permission-module-header">
+                            <div class="custom-control custom-checkbox mb-0">
+                                <input type="checkbox"
+                                       class="custom-control-input module-header-check"
+                                       id="mod_${mod.key}"
+                                       ${allChecked ? "checked" : ""}
+                                       onchange="toggleModule('${mod.key}', this.checked)">
+                                <label class="custom-control-label" for="mod_${mod.key}">${mod.label}</label>
+                            </div>
+                        </div>
+                        <div class="permission-ops">${opsHtml}</div>
+                    </div>`;
+
+                container.appendChild(colDiv);
+            });
+        }
+
+        function toggleModule(moduleKey, checked) {
+            document.querySelectorAll(`[data-module="${moduleKey}"]`).forEach(cb => cb.checked = checked);
+            syncSelectAll();
+        }
+
+        function syncModuleHeader(moduleKey) {
+            const ops = document.querySelectorAll(`[data-module="${moduleKey}"]`);
+            document.getElementById(`mod_${moduleKey}`).checked = [...ops].every(c => c.checked);
+        }
+
+        function syncSelectAll() {
+            const allOps = document.querySelectorAll(".op-check");
+            document.getElementById("selectAllCheck").checked = [...allOps].every(c => c.checked);
+        }
+
+        function toggleSelectAll(checked) {
+            document.querySelectorAll(".op-check").forEach(cb => cb.checked = checked);
+            document.querySelectorAll(".module-header-check").forEach(cb => cb.checked = checked);
+        }
+
+        function deselectAll() {
+            document.querySelectorAll(".op-check").forEach(cb => cb.checked = false);
+            document.querySelectorAll(".module-header-check").forEach(cb => cb.checked = false);
+            document.getElementById("selectAllCheck").checked = false;
+        }
+
+        function collectPermissions() {
+            const result = {};
+            MODULES.forEach(mod => {
+                const checked = [...document.querySelectorAll(`[data-module="${mod.key}"]`)]
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.dataset.op);
+                if (checked.length > 0) result[mod.key] = checked;
+            });
+            return result;
+        }
+
+        function countCheckedPermissions() {
+            return document.querySelectorAll(".op-check:checked").length;
+        }
+
+        // ---- Generate Role ID ----
+        function generateRoleId(data) {
+            let max = 0;
+            data.forEach(role => {
+                if (!role.roleId) return;
+                let number = parseInt(role.roleId.replace("ROLE", ""));
+                if (number > max) max = number;
+            });
+            let next = max + 1;
+            $("#roleId").val("ROLE" + String(next).padStart(5, "0"));
+        }
+
+        // ---- Load Roles ----
+        async function loadRoles() {
+            const response = await fetch("/api/role", {
+                method: "GET",
+                credentials: "include"
+            });
+
+            if (response.status === 401) { window.location.href = "/login"; return; }
+            if (response.status === 403) { Swal.fire("Akses ditolak", "", "warning"); return; }
+
+            const data = await response.json();
+
+            if ($.fn.DataTable.isDataTable("#datatablesIndex")) {
+                $("#datatablesIndex").DataTable().clear().destroy();
+            }
+
+            table = $("#datatablesIndex").DataTable({
+                data: data,
+                responsive: true,
+                pageLength: 25,
+                columnDefs: [
+                    {
+                        targets: 0,
+                        data: null,
+                        render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1,
+                        className: "text-center",
+                        orderable: false
+                    },
+                    { targets: 1, data: "roleId" },
+                    { targets: 2, data: "roleName" },
+                    {
+                        targets: 3,
+                        data: null,
+                        render: data => `
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-info" onclick="openEditRole('${data.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger" onclick="deleteRole('${data.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>`,
+                        className: "text-center",
+                        orderable: false
+                    }
+                ],
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: " Search role...",
+                    lengthMenu: "Show _MENU_ Data",
+                    paginate: { first: "«", last: "»", next: "›", previous: "‹" }
+                },
+                dom: "<'row mb-3'<'col-md-6'l><'col-md-6'f>>" +
+                     "<'table-responsive card-body p-0't>" +
+                     "<'row mt-3'<'col-md-5'i><'col-md-7'p>>"
+            });
+        }
+
+        // ---- Open Create Modal ----
+        $("#modalRole").on("shown.bs.modal", function () {
+            if (!$("#roleDbId").val()) {
+                const data = table.rows().data().toArray();
+                generateRoleId(data);
+            }
+        });
+
+        // ---- Open Edit Modal ----
+        async function openEditRole(id) {
+            const response = await fetch(`/api/role/${id}`, {
+                method: "GET",
+                credentials: "include"
+            });
+
+            if (!response.ok) {
+                Swal.fire({ icon: "error", title: "Gagal mengambil data role" });
+                return;
+            }
+
+            const role = await response.json();
+
+            // role.permissions contoh: { "stockIn": ["Create","View"], "stockOut": ["Delete"] }
+            $("#modalRoleTitle").text("Edit Role");
+            $("#roleDbId").val(role.id);
+            $("#roleId").val(role.roleId);
+            $("#roleName").val(role.roleName);
+            renderPermissions(role.permissions || {});
+
+            $("#modalRole").modal("show");
+        }
+
+        // ---- Reset Modal on Close ----
+        $("#modalRole").on("hidden.bs.modal", function () {
+            $("#modalRoleTitle").text("Create Role");
+            $("#roleDbId").val("");
+            $("#roleId").val("");
+            $("#roleName").val("");
+            renderPermissions();
+        });
+
+        // ---- Submit Form (Create & Edit) ----
+        $("#roleForm").submit(async function (e) {
+            e.preventDefault();
+
+            if (countCheckedPermissions() < 3) {
+                Swal.fire({ icon: "warning", title: "Minimal pilih 3 permission" });
+                return;
+            }
+
+            const id = $("#roleDbId").val();
+            const isEdit = !!id;
+
+            const payload = {
+                roleName: $("#roleName").val(),
+                permissions: collectPermissions()
+            };
+
+            const response = await fetch(isEdit ? `/api/role/${id}` : "/api/role", {
+                method: isEdit ? "PUT" : "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                Swal.fire({
+                    icon: "success",
+                    title: isEdit ? "Role diperbarui" : "Role dibuat",
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    $("#modalRole").modal("hide");
+                    loadRoles();
+                });
+            } else {
+                Swal.fire({ icon: "error", title: isEdit ? "Gagal update role" : "Gagal create role" });
+            }
+        });
+
+        // ---- Delete Role ----
+        async function deleteRole(id) {
+            const result = await Swal.fire({
+                title: "Yakin?",
+                text: "Role akan dihapus",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#6c757d"
+            });
+
+            if (!result.isConfirmed) return;
+
+            const response = await fetch(`/api/role/${id}`, {
+                method: "DELETE",
+                credentials: "include"
+            });
+
+            if (response.ok) {
+                Swal.fire({ icon: "success", timer: 1500, showConfirmButton: false })
+                    .then(() => loadRoles());
+            } else {
+                Swal.fire({ icon: "error", title: "Gagal delete" });
+            }
+        }
+
+    </script>
+</body>

@@ -78,6 +78,11 @@
                                             <input id="fullname" class="form-control">
                                         </div>
 
+                                        <div class="form-group">
+                                            <label><i class="fas fa-user-shield mr-2"></i>Role</label>
+                                            <input id="RoleUpdate" class="form-control">
+                                        </div>
+
                                     </form>
 
                                     <div class="d-flex justify-content-end pt-3 border-top">
@@ -88,6 +93,11 @@
                                                 data-toggle="modal"
                                                 data-target="#updatePassword">
                                             <i class="fas fa-key mr-1"></i>Password
+                                        </button>
+                                        <button class="btn btn-info btn-modern mr-2"
+                                                data-toggle="modal"
+                                                data-target="#roleUpdate">
+                                            <i class="fas fa-plus mr-1"></i>Role
                                         </button>
                                         <button class="btn btn-primary btn-modern px-5"
                                                 onclick="updateUser()">
@@ -131,6 +141,45 @@
                         <i class="fas fa-save mr-1"></i>Update
                     </button>
                 </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="roleUpdate">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5>Update Role User</h5>
+                    <button class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <form id="RoleUpdateForm">
+                    <div class="modal-body">
+
+                        <div class="form-group">
+                            <label>
+                                <i class="fas fa-barcode text-muted mr-2"></i>
+                                Current Role <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="currentRole" class="form-control" required>
+                        </div>
+
+                        <div id="detailContainer"></div>
+
+                        <button type="button" class="btn btn-success btn-sm mt-2" onclick="addDetail()">
+                            <i class="fas fa-plus mr-1"></i>Item
+                        </button>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary btn-modern">
+                            <i class="fas fa-save mr-1"></i>Update
+                        </button>
+                    </div>
+                </form>
 
             </div>
         </div>
@@ -219,6 +268,56 @@
             if(e.key==='Escape') window.location.href="/user";
         });
 
+                $("#RoleUpdateForm").submit(async function (e) {
+                e.preventDefault();
+
+                const form = e.target;
+
+                let details = [];
+
+                $("#detailContainer .detail-item").each(function () {
+                    details.push({
+                        itemId: $(this).find(".item-select").val(),
+                        qtyRequired: parseInt($(this).find(".qty").val())
+                    });
+                });
+
+                const payload = {
+                    doNumber: form.doNumber.value,
+                    details
+                };
+
+                const response = await fetch("/api/pickinglist", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Berhasil",
+                        text: "Picking List berhasil dibuat",
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $("#createPickingList").modal("hide");
+                        form.reset();
+                        loadDO();
+                    });
+
+                } else {
+
+                    Swal.fire({
+                        icon: "error",
+                        title: "Gagal",
+                        text: "Create picking list gagal"
+                    });
+
+                }
+            });
     </script>
 
 </body>

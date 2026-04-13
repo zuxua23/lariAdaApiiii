@@ -3,9 +3,9 @@
 <aside class="main-sidebar sidebar-light-primary elevation-2 sidebar-light-industrial">
     <a href="/dashboard" class="brand-link">
         <img src="~/img/sato.svg" alt="Sato logo">
-    </a>
-
-    <div class="sidebar">
+        </a>
+    
+        <div class="sidebar">
 
         <nav class="mt-2">
 
@@ -86,6 +86,19 @@
                                 </li>
                             }
 
+                            @* Role *@
+                            @if (PermissionHelper.HasPermission(Context, "PERMISSION_GET"))
+                            {
+                                <li class="nav-item">
+                                    <a asp-route="Permission"
+                                    class="nav-link @(ViewData["pages"]?.ToString() == "permission" ? "active" : "")">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Permission</p>
+                                    </a>
+                                </li>
+                            }
+
+
                         </ul>
 
                     </li>
@@ -129,6 +142,7 @@
                         </a>
                     </li>
                 }
+
 
 
                 <!-- REPORT -->

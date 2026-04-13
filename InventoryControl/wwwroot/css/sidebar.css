@@ -1,4 +1,4 @@
-﻿/* ========================================
+/* ========================================
    LIGHT INDUSTRIAL SIDEBAR - CERAH & CLEAN
    Tema terang untuk sistem industri
 ======================================== */
@@ -14,34 +14,34 @@
 }
 
 /* Brand Logo - Light */
-.sidebar-light-industrial .brand-link {
-    background: rgba(255,255,255,0.7) !important;
-    border-bottom: 1px solid rgba(0,0,0,0.08) !important;
-    padding: 1.8rem 1.5rem !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    transition: all 0.25s ease !important;
-    backdrop-filter: blur(10px);
-}
+    .sidebar-light-industrial .brand-link {
+        background: transparent !important; /* Dibuat tembus pandang */
+        border-bottom: none !important; /* Garis pemisah dihilangkan */
+        padding: 2rem 1.5rem 1rem !important; /* Jarak atas agak dilebarkan biar proporsional */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: none !important; /* Hilangkan bayangan kotak */
+    }
 
-.sidebar-light-industrial .brand-link:hover {
-    background: rgba(255,255,255,0.9) !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    border-radius: 12px !important;
-}
+        .sidebar-light-industrial .brand-link:hover {
+            background: transparent !important;
+            box-shadow: none !important;
+        }
 
-.sidebar-light-industrial .brand-link img {
-    width: 160px !important;
-    height: auto !important;
-    filter: brightness(1) contrast(1.05) !important;
-    transition: all 0.3s ease !important;
-}
+        .sidebar-light-industrial .brand-link img {
+            width: 160px !important;
+            height: auto !important;
+            filter: brightness(1) contrast(1.05) !important;
+            transition: all 0.3s cubic-bezier(0.4,0,0.2,1) !important;
+        }
 
-.sidebar-light-industrial .brand-link img:hover {
-    filter: brightness(1.1) contrast(1.1) !important;
-    transform: scale(1.02);
-}
+            .sidebar-light-industrial .brand-link img:hover {
+                filter: brightness(1.1) contrast(1.1) !important;
+                transform: scale(1.04); /* Logo sedikit membesar */
+                /* Opsional: Kasih bayangan tipis langsung di bentuk logonya */
+                filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05)) !important;
+            }
 
 /* Sidebar Content */
 .sidebar-light-industrial .sidebar {
@@ -64,15 +64,6 @@
     border: 1px solid rgba(0,0,0,0.04) !important;
 }
 
-.sidebar-light-industrial .nav-link:hover {
-    background: rgba(255,255,255,0.95) !important;
-    color: #1e293b !important;
-    transform: translateX(4px) !important;
-    box-shadow: 
-        0 4px 12px rgba(0,0,0,0.1),
-        inset 0 1px 0 rgba(255,255,255,1) !important;
-    border-color: rgba(0,0,0,0.08) !important;
-}
 
 .sidebar-light-industrial .nav-link.active {
     background: linear-gradient(135deg, #e2e8f0 0%, #f1f5f9 100%) !important;
