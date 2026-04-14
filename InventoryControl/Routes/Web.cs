@@ -1,4 +1,4 @@
-﻿
+
 namespace InventoryControl.Routes;
 
 public static class Web
@@ -68,6 +68,13 @@ public static class Web
             name: "stockOut",
             pattern: "/stockOut",
             defaults: new { controller = "StockOut", action = "Index" })
+                    .AddEndpointFilter(AuthFilter)
+            .WithMetadata(new HttpMethodMetadata(new[] { "GET" }));
+
+        app.MapControllerRoute(
+            name: "TransactionHistory",
+            pattern: "/TransactionHistory",
+            defaults: new { controller = "TransactionHistory", action = "Index" })
                     .AddEndpointFilter(AuthFilter)
             .WithMetadata(new HttpMethodMetadata(new[] { "GET" }));
 

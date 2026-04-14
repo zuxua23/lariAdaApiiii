@@ -73,7 +73,7 @@
                                             <thead class="thead-light">
                                                 <tr>
                                                     <th class="text-center" width="60">#</th>
-                                                    <th>DO Number</th>
+                                                    <th class="text-nowrap">DO Number</th>
                                                     <th>Status</th>
                                                     <th>Create Date</th>
                                                     <th class="text-center" width="160">Actions</th>
@@ -81,20 +81,14 @@
                                             </thead>
                                         </table>
                                     </div>
-
                                 </div>
                             </div>
-
                         </div>
                     </div>
-
                 </div>
             </section>
-
         </div>
-
         @Html.Partial("_Footer")
-
     </div>
 
     <div class="modal fade" id="createPickingList">
@@ -191,69 +185,89 @@
                 $('#datatablesIndex').DataTable().clear().destroy();
             }
 
-            table = $("#datatablesIndex").DataTable({
-                data: data,
+                table = $("#datatablesIndex").DataTable({
+                    data: data,
+                    responsive: true,
+                    pageLength: 10, 
+                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]], 
 
-                responsive: true,
-                pageLength: 10,
-
-                columnDefs: [
-                    {
-                        targets: 0,
-                        data: null,
-                        render: (d, t, r, m) =>
-                            m.row + m.settings._iDisplayStart + 1,
-                        className: "text-center",
-                        orderable: false
-                    },
-                    { targets: 1, data: "doNumber" },
-                    { targets: 2, data: "status" },
-                    {
-                        targets: 3,
-                        data: "createdAt",
-                        render: function(data) {
-                            if (!data) return '-';
-
-                            const date = new Date(data);
-                            return date.toLocaleString('id-ID', {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            });
+                    autoWidth: false, 
+                    columnDefs: [
+                        {
+                            targets: 0,
+                            data: null,
+                            render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1,
+                            className: "text-center",
+                            orderable: false,
+                            width: "5%" 
+                        },
+                        {
+                            targets: 1,
+                            data: "doNumber",
+                            className: "text-nowrap", 
+                            width: "25%", 
+                            responsivePriority: 1 
+                        },
+                        {
+                            targets: 2,
+                            data: "status",
+                            width: "15%" 
+                        },
+                        {
+                            targets: 3,
+                            data: "createdAt",
+                            width: "35%", 
+                            render: function(data) {
+                                if (!data) return '-';
+                                const date = new Date(data);
+                                return date.toLocaleString('id-ID', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                });
+                            }
+                        },
+                        {
+                            targets: 4,
+                            data: null,
+                            render: data => `
+                                <div class="btn-group btn-group-sm">
+                                    <a href="/pickinglist/detail?id=${data.doId}" class="btn btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button class="btn btn-danger"
+                                            onclick="deletePickingList('${data.doId}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            `,
+                            className: "text-center",
+                            orderable: false,
+                            width: "20%", 
+                            responsivePriority: 2 
                         }
-                    },  
-                    {
-                        targets: 4,
-                        data: null,
-                        render: data => `
-                            <div class="btn-group btn-group-sm">
-                                <a href="/pickinglist/detail?id=${data.doId}" class="btn btn-info">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <button class="btn btn-danger"
-                                        onclick="deletePickingList('${data.doId}')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        `,
-                        className: "text-center",
-                        orderable: false
+                    ],
+                    language: {
+                        search: "_INPUT_",
+                        searchPlaceholder: " Search picking list...",
+                        lengthMenu: "Show _MENU_ Data",
+                        paginate: { first: "«", last: "»", next: "›", previous: "‹" }
+                    },
+                    dom: "<'row mb-3'<'col-md-6'l><'col-md-6'f>>" +
+                         "<'table-responsive card-body p-0't>" +
+                         "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+
+                    drawCallback: function() {
+                        $('.dataTables_length select').addClass('custom-select custom-select-sm rounded');
+                        $('.dataTables_filter input').addClass('form-control rounded shadow-sm');
+
+                        if($.fn.responsive){
+                            table.responsive.recalc();
+                        }
                     }
-                ],
-
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: " Search picking list...",
-                    lengthMenu: "Show _MENU_ Data",
-                    paginate: { first: "«", last: "»", next: "›", previous: "‹" }
-                },
-
-                dom: "<'row mb-3'<'col-md-6'l><'col-md-6'f>>" +
-                     "<'table-responsive card-body p-0't>" +
-                     "<'row mt-3'<'col-md-5'i><'col-md-7'p>>"
-            });
+                });
         }
 
         $(document).on("click", ".remove-item", function () {
@@ -398,7 +412,24 @@
 
             }
         }
+            $(window).on('resize', function() {
+                clearTimeout(window.datatableResizeTimeout);
+                window.datatableResizeTimeout = setTimeout(function() {
+                    if (table) {
+                        table.columns.adjust().responsive.recalc();
+                    }
+                }, 250);
+            });
 
+            $(document).ready(function() {
+                $(window).trigger('resize');
+            });
+
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden && table) {
+                    setTimeout(() => table.columns.adjust().responsive.recalc(), 100);
+                }
+            });
     </script>
 
 </body>

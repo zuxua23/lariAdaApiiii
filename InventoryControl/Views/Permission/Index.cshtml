@@ -68,7 +68,7 @@
                                     <thead class="thead-light">
                                         <tr>
                                             <th class="text-center" width="60">#</th>
-                                            <th>Role ID</th>
+                                            <th class="text-nowrap">Role ID</th>
                                             <th>Role Name</th>
                                             <th>Status</th>
                                             <th class="text-center" width="160">Actions</th>
@@ -77,19 +77,13 @@
                                 </table>
                             </div>
                         </div>
-
                     </div>
-
                 </div>
             </section>
-
         </div>
-
         @Html.Partial("_Footer")
-
     </div>
 
-    <!-- Modal Create / Edit Role -->
     <div class="modal fade" id="modalRole">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
@@ -142,7 +136,6 @@
 
                             <div class="card-body">
                                 <div class="row" id="permissionsContainer">
-                                    <!-- Rendered dynamically by JS -->
                                 </div>
                             </div>
                         </div>
@@ -166,48 +159,7 @@
 
     @Html.Partial("_BaseScript")
 
-    <style>
-        .permission-module-card {
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            padding: 12px 14px;
-            margin-bottom: 12px;
-            background: #fff;
-            transition: box-shadow 0.2s;
-        }
-        .permission-module-card:hover {
-            box-shadow: 0 2px 12px rgba(59, 130, 246, 0.1);
-        }
-        .permission-module-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding-bottom: 8px;
-            margin-bottom: 8px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        .permission-module-header label {
-            font-weight: 600;
-            font-size: 0.875rem;
-            margin: 0;
-            cursor: pointer;
-        }
-        .permission-ops {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4px 8px;
-        }
-        .permission-ops .custom-control-label {
-            font-size: 0.8125rem;
-            cursor: pointer;
-        }
-    </style>
-
     <script>
-
-        // ============================================================
-        // CONFIG — sesuaikan modules & operations dengan kebutuhan
-        // ============================================================
         const MODULES = [
             { key: "stockIn",        label: "Stock IN" },
             { key: "stockOut",       label: "Stock OUT" },
@@ -221,8 +173,6 @@
 
         const OPERATIONS = ["Create", "View", "Update", "Delete", "Detail", "Export"];
 
-        // ============================================================
-
         let table;
 
         $(document).ready(function () {
@@ -230,7 +180,6 @@
             loadRoles();
         });
 
-        // ---- Render Permission Checkboxes ----
         function renderPermissions(existingPermissions = {}) {
             const container = document.getElementById("permissionsContainer");
             container.innerHTML = "";
@@ -317,7 +266,6 @@
             return document.querySelectorAll(".op-check:checked").length;
         }
 
-        // ---- Generate Role ID ----
         function generateRoleId(data) {
             let max = 0;
             data.forEach(role => {
@@ -329,7 +277,6 @@
             $("#roleId").val("ROLE" + String(next).padStart(5, "0"));
         }
 
-        // ---- Load Roles ----
         async function loadRoles() {
             const response = await fetch("/api/role", {
                 method: "GET",
@@ -349,18 +296,32 @@
                 data: data,
                 responsive: true,
                 pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]], 
+
+                autoWidth: false, 
                 columnDefs: [
                     {
                         targets: 0,
                         data: null,
                         render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1,
                         className: "text-center",
-                        orderable: false
+                        orderable: false,
+                        width: "5%" 
                     },
-                    { targets: 1, data: "roleId" },
-                    { targets: 2, data: "roleName" },
+                    { 
+                        targets: 1, 
+                        data: "roleId",
+                        className: "text-nowrap", 
+                        width: "20%" 
+                    },
+                    { 
+                        targets: 2, 
+                        data: "roleName",
+                        width: "50%", 
+                        responsivePriority: 1 
+                    },
                     {
-                        targets: 3,
+                        targets: 3, 
                         data: null,
                         render: data => `
                             <div class="btn-group btn-group-sm">
@@ -372,7 +333,9 @@
                                 </button>
                             </div>`,
                         className: "text-center",
-                        orderable: false
+                        orderable: false,
+                        width: "25%", 
+                        responsivePriority: 2 
                     }
                 ],
                 language: {
@@ -383,11 +346,19 @@
                 },
                 dom: "<'row mb-3'<'col-md-6'l><'col-md-6'f>>" +
                      "<'table-responsive card-body p-0't>" +
-                     "<'row mt-3'<'col-md-5'i><'col-md-7'p>>"
+                     "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+
+                drawCallback: function() {
+                    $('.dataTables_length select').addClass('custom-select custom-select-sm rounded');
+                    $('.dataTables_filter input').addClass('form-control rounded shadow-sm');
+
+                    if($.fn.responsive){
+                        table.responsive.recalc();
+                    }
+                }
             });
         }
 
-        // ---- Open Create Modal ----
         $("#modalRole").on("shown.bs.modal", function () {
             if (!$("#roleDbId").val()) {
                 const data = table.rows().data().toArray();
@@ -395,7 +366,6 @@
             }
         });
 
-        // ---- Open Edit Modal ----
         async function openEditRole(id) {
             const response = await fetch(`/api/role/${id}`, {
                 method: "GET",
@@ -409,7 +379,6 @@
 
             const role = await response.json();
 
-            // role.permissions contoh: { "stockIn": ["Create","View"], "stockOut": ["Delete"] }
             $("#modalRoleTitle").text("Edit Role");
             $("#roleDbId").val(role.id);
             $("#roleId").val(role.roleId);
@@ -419,7 +388,6 @@
             $("#modalRole").modal("show");
         }
 
-        // ---- Reset Modal on Close ----
         $("#modalRole").on("hidden.bs.modal", function () {
             $("#modalRoleTitle").text("Create Role");
             $("#roleDbId").val("");
@@ -428,7 +396,6 @@
             renderPermissions();
         });
 
-        // ---- Submit Form (Create & Edit) ----
         $("#roleForm").submit(async function (e) {
             e.preventDefault();
 
@@ -467,7 +434,6 @@
             }
         });
 
-        // ---- Delete Role ----
         async function deleteRole(id) {
             const result = await Swal.fire({
                 title: "Yakin?",
@@ -492,6 +458,23 @@
                 Swal.fire({ icon: "error", title: "Gagal delete" });
             }
         }
+        $(window).on('resize', function() {
+            clearTimeout(window.datatableResizeTimeout);
+            window.datatableResizeTimeout = setTimeout(function() {
+                if (table) {
+                    table.columns.adjust().responsive.recalc();
+                }
+            }, 250); 
+        });
 
+        $(document).ready(function() {
+            $(window).trigger('resize');
+        });
+
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && table) {
+                setTimeout(() => table.columns.adjust().responsive.recalc(), 100);
+            }
+        });
     </script>
 </body>

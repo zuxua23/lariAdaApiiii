@@ -146,15 +146,15 @@
 
 
                 <!-- REPORT -->
-                @if (PermissionHelper.HasPermission(Context, "DO_GET"))
+                    @if (PermissionHelper.HasPermission(Context, "TRANSACTION_GET"))
                 {
-                    <li class="nav-item">
-                        <a asp-route="report"
-                           class="nav-link">
-                            <i class="nav-icon fas fa-file-alt"></i>
-                            <p>Report</p>
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a asp-route="TransactionHistory"
+                                   class="nav-link @(ViewData["pages"]?.ToString() == "TransactionHistory" ? "active" : "")">
+                                <i class="nav-icon fas fa-file"></i>
+                                <p>Transaction History</p>
+                            </a>
+                        </li>
                 }
 
 

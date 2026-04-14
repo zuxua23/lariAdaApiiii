@@ -73,7 +73,7 @@
                                             <thead class="thead-light">
                                                 <tr>
                                                     <th class="text-center" width="60">#</th>
-                                                    <th class="text-nowrap">Location ID</th>
+                                                    <th>Location ID</th>
                                                     <th>Name</th>
                                                     <th>Description</th>
                                                     <th class="text-center" width="160">Actions</th>
@@ -180,65 +180,83 @@
                 $('#datatablesIndex').DataTable().clear().destroy();
             }
 
-            table = $("#datatablesIndex").DataTable({
-                data: data,
+                table = $("#datatablesIndex").DataTable({
+                    data: data,
 
-                responsive: true,
-                pageLength: 25,
+                    responsive: true,
+                    pageLength: 25,
+                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]], 
 
-                columnDefs: [
-                    {
-                        targets: 0,
-                        data: null,
-                        render: (data, type, row, meta) =>
-                            meta.row + meta.settings._iDisplayStart + 1,
-                        className: "text-center",
-                        orderable: false
+                    autoWidth: false, 
+                    columnDefs: [
+                        {
+                            targets: 0,
+                            data: null,
+                            render: (data, type, row, meta) =>
+                                meta.row + meta.settings._iDisplayStart + 1,
+                            className: "text-center",
+                            orderable: false,
+                            width: "5%"
+                        },
+                        {
+                            targets: 1,
+                            data: "locId",
+                            className: "text-nowrap",
+                            width: "15%"
+                        },
+                        {
+                            targets: 2,
+                            data: "name",
+                            width: "30%",
+                            responsivePriority: 1 
+                        },
+                        {
+                            targets: 3,
+                            data: "description",
+                            width: "35%"
+                        },
+                        {
+                            targets: 4,
+                            data: null,
+                            render: data => `
+                                <div class="btn-group btn-group-sm">
+                                    <a href="/location/detail?id=${data.id}" class="btn btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button class="btn btn-danger"
+                                            onclick="deleteLocation('${data.id}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            `,
+                            className: "text-center",
+                            orderable: false,
+                            width: "15%",
+                            responsivePriority: 2 
+                        }
+                    ],
+
+                    language: {
+                        search: "_INPUT_",
+                        searchPlaceholder: " Search location...",
+                        lengthMenu: "Show _MENU_ Data",
+                        paginate: { first: "«", last: "»", next: "›", previous: "‹" }
                     },
-                    {
-                        targets: 1,
-                        data: "locId",
-                        className: "text-nowrap"
-                    },
-                    {
-                        targets: 2,
-                        data: "name"
-                    },
-                    {
-                        targets: 3,
-                        data: "description"
-                    },
-                    {
-                        targets: 4,
-                        data: null,
-                        render: data => `
-                            <div class="btn-group btn-group-sm">
-                                <a href="/location/detail?id=${data.id}" class="btn btn-info">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <button class="btn btn-danger"
-                                        onclick="deleteLocation('${data.id}')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        `,
-                        className: "text-center",
-                        orderable: false
+
+                    dom: "<'row mb-3'<'col-md-6'l><'col-md-6'f>>" +
+                         "<'table-responsive card-body p-0't>" +
+                         "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+
+                    drawCallback: function() {
+                        $('.dataTables_length select').addClass('custom-select custom-select-sm rounded');
+                        $('.dataTables_filter input').addClass('form-control rounded shadow-sm');
+
+                        if($.fn.responsive){
+                            table.responsive.recalc();
+                        }
                     }
-                ],
-
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: " Search location...",
-                    lengthMenu: "Show _MENU_ Data",
-                    paginate: { first: "«", last: "»", next: "›", previous: "‹" }
-                },
-
-                dom: "<'row mb-3'<'col-md-6'l><'col-md-6'f>>" +
-                     "<'table-responsive card-body p-0't>" +
-                     "<'row mt-3'<'col-md-5'i><'col-md-7'p>>"
-            });
-        }
+                });
+            }
 
         $("#createLocationForm").submit(async function (e) {
             e.preventDefault();

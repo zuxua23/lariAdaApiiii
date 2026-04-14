@@ -70,7 +70,7 @@
                                     <thead class="thead-light">
                                         <tr>
                                             <th class="text-center" width="60">#</th>
-                                            <th>Reader ID</th>
+                                            <th class="text-nowrap">Reader ID</th>
                                             <th>Name</th>
                                             <th>Location</th>
                                             <th>IP Address</th>
@@ -79,18 +79,12 @@
                                     </thead>
                                 </table>
                             </div>
-
                         </div>
-
                     </div>
-
                 </div>
             </section>
-
         </div>
-
         @Html.Partial("_Footer")
-
     </div>
 
     <div class="modal fade" id="createReader">
@@ -133,7 +127,6 @@
                         </button>
                     </div>
                 </form>
-
             </div>
         </div>
     </div>
@@ -184,50 +177,84 @@
                 $('#datatablesIndex').DataTable().clear().destroy();
             }
 
-            table = $("#datatablesIndex").DataTable({
-                data: data,
-                responsive: true,
-                pageLength: 25,
-                columnDefs: [
-                    {
-                        targets: 0,
-                        data: null,
-                        render: (d,t,r,m)=>m.row + m.settings._iDisplayStart + 1,
-                        className: "text-center",
-                        orderable: false
+                table = $("#datatablesIndex").DataTable({
+                    data: data,
+                    responsive: true,
+                    pageLength: 25,
+                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]], 
+
+                    autoWidth: false, 
+                    columnDefs: [
+                        {
+                            targets: 0,
+                            data: null,
+                            render: (d,t,r,m)=>m.row + m.settings._iDisplayStart + 1,
+                            className: "text-center",
+                            orderable: false,
+                            width: "5%" 
+                        },
+                        {
+                            targets: 1,
+                            data: "rdrId",
+                            className: "text-nowrap",
+                            width: "15%" 
+                        },
+                        {
+                            targets: 2,
+                            data: "rdrName",
+                            width: "25%", 
+                            responsivePriority: 1 
+                        },
+                        {
+                            targets: 3,
+                            data: "locationName",
+                            defaultContent:"-",
+                            width: "20%" 
+                        },
+                        {
+                            targets: 4,
+                            data: "ipAddress",
+                            width: "15%" 
+                        },
+                        {
+                            targets: 5,
+                            data: null,
+                            render: data => `
+                                <div class="btn-group btn-group-sm">
+                                    <a href="/reader/detail?id=${data.id}" class="btn btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button class="btn btn-danger"
+                                            onclick="deleteReader('${data.id}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            `,
+                            className: "text-center",
+                            orderable: false,
+                            width: "20%", 
+                            responsivePriority: 2 
+                        }
+                    ],
+                    language: {
+                        search: "_INPUT_",
+                        searchPlaceholder: " Search reader...",
+                        lengthMenu: "Show _MENU_ Data",
+                        paginate: { first: "«", last: "»", next: "›", previous: "‹" }
                     },
-                    { targets: 1, data: "rdrId" },
-                    { targets: 2, data: "rdrName" },
-                    { targets: 3, data: "locationName", defaultContent:"-" },
-                    { targets: 4, data: "ipAddress" },
-                    {
-                        targets: 5,
-                        data: null,
-                        render: data => `
-                            <div class="btn-group btn-group-sm">
-                                <a href="/reader/detail?id=${data.id}" class="btn btn-info">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <button class="btn btn-danger"
-                                        onclick="deleteReader('${data.id}')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        `,
-                        className: "text-center",
-                        orderable: false
+                    dom: "<'row mb-3'<'col-md-6'l><'col-md-6'f>>" +
+                         "<'table-responsive card-body p-0't>" +
+                         "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+
+                    drawCallback: function() {
+                        $('.dataTables_length select').addClass('custom-select custom-select-sm rounded');
+                        $('.dataTables_filter input').addClass('form-control rounded shadow-sm');
+
+                        if($.fn.responsive){
+                            table.responsive.recalc();
+                        }
                     }
-                ],
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: " Search reader...",
-                    lengthMenu: "Show _MENU_ Data",
-                    paginate: { first: "«", last: "»", next: "›", previous: "‹" }
-                },
-                dom: "<'row mb-3'<'col-md-6'l><'col-md-6'f>>" +
-                     "<'table-responsive card-body p-0't>" +
-                     "<'row mt-3'<'col-md-5'i><'col-md-7'p>>"
-            });
+                });
         }
 
         $("#createReaderForm").submit(async function (e) {

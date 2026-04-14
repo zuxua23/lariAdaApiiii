@@ -63,14 +63,14 @@
                             </div>
                         </div>
 
+                      
                         <div class="card-body pt-3">
-
                             <div class="table-responsive">
-                                <table id="datatablesIndex" class="table table-hover">
+                                <table id="datatablesIndex" class="table table-hover ">
                                     <thead class="thead-light">
                                         <tr>
                                             <th class="text-center" width="60">#</th>
-                                            <th>User ID</th>
+                                            <th class="text-nowrap">User ID</th>
                                             <th>Full Name</th>
                                             <th>Username</th>
                                             <th class="text-center" width="160">Actions</th>
@@ -78,11 +78,8 @@
                                     </thead>
                                 </table>
                             </div>
-
                         </div>
-
                     </div>
-
                 </div>
             </section>
 
@@ -158,163 +155,208 @@
 
     <script>
 
-        function generateUserId(data) {
-
-            let max = 0;
-
-            data.forEach(user => {
-                if (!user.userId) return;
-                let number = parseInt(user.userId.replace("USR", ""));
-                if (number > max) max = number;
-            });
-
-            let next = max + 1;
-            let formatted = "USR" + String(next).padStart(5, '0');
-
-            $("#userId").val(formatted);
-        }
-
-        let table;
-
-        $(document).ready(function () {
-            loadUsers();
-        });
-
-        async function loadUsers() {
-
-            const response = await fetch("/api/user", {
-                method: "GET",
-                credentials: "include"
-            });
-
-            if(response.status === 401){
-                window.location.href = "/login";
-                return;
-            }
-
-            if(response.status === 403){
-                Swal.fire("Akses ditolak","","warning");
-                return;
-            }
-
-            const data = await response.json();
-
-            if ($.fn.DataTable.isDataTable('#datatablesIndex')) {
-                $('#datatablesIndex').DataTable().clear().destroy();
-            }
-
-            table = $("#datatablesIndex").DataTable({
-                data: data,
-                responsive: true,
-                pageLength: 25,
-                columnDefs: [
-                    {
-                        targets: 0,
-                        data: null,
-                        render: (d,t,r,m)=>m.row + m.settings._iDisplayStart + 1,
-                        className:"text-center",
-                        orderable:false
-                    },
-                    { targets:1, data:"userId" },
-                    { targets:2, data:"fullname" },
-                    { targets:3, data:"username" },
-                    {
-                        targets:4,
-                        data:null,
-                        render:data=>`
-                            <div class="btn-group btn-group-sm">
-                                <a href="/user/detail?id=${data.id}" class="btn btn-info">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <button class="btn btn-danger"
-                                        onclick="deleteUser('${data.id}')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        `,
-                        className:"text-center",
-                        orderable:false
-                    }
-                ],
-                language:{
-                    search:"_INPUT_",
-                    searchPlaceholder:" Search user...",
-                    lengthMenu:"Show _MENU_ Data",
-                    paginate:{ first:"«", last:"»", next:"›", previous:"‹" }
-                },
-                dom:"<'row mb-3'<'col-md-6'l><'col-md-6'f>>"+
-                    "<'table-responsive card-body p-0't>"+
-                    "<'row mt-3'<'col-md-5'i><'col-md-7'p>>"
-            });
-        }
-
-        $("#createUserForm").submit(async function (e) {
-            e.preventDefault();
-
-            const form = e.target;
-
-            const payload = {
-                username: form.username.value,
-                fullname: form.fullname.value,
-                password: form.password.value
-            };
-
-            const response = await fetch("/api/user", {
-                method:"POST",
-                credentials:"include",
-                headers:{ "Content-Type":"application/json" },
-                body:JSON.stringify(payload)
-            });
-
-            if (response.ok) {
-                Swal.fire({
-                    icon:'success',
-                    title:'Berhasil',
-                    timer:1500,
-                    showConfirmButton:false
-                }).then(()=>{
-                    $("#createUser").modal("hide");
-                    form.reset();
-                    loadUsers();
+            function generateUserId(data) {
+                let max = 0;
+                data.forEach(user => {
+                    if (!user.userId) return;
+                    let number = parseInt(user.userId.replace("USR", ""));
+                    if (number > max) max = number;
                 });
-            } else {
-                Swal.fire({ icon:'error', title:'Gagal create user' });
+
+                let next = max + 1;
+                let formatted = "USR" + String(next).padStart(5, '0');
+                $("#userId").val(formatted);
             }
-        });
 
-        async function deleteUser(id) {
+            let table;
 
-            const result = await Swal.fire({
-                title:"Yakin?",
-                text:"User akan dihapus",
-                icon:"warning",
-                showCancelButton:true,
-                confirmButtonColor:"#d33",
-                cancelButtonColor:"#6c757d"
+            $(document).ready(function () {
+                loadUsers();
             });
 
-            if (!result.isConfirmed) return;
+            async function loadUsers() {
 
-            const response = await fetch(`/api/user/${id}`, {
-                method:"DELETE",
-                credentials:"include"
+                const response = await fetch("/api/user", {
+                    method: "GET",
+                    credentials: "include"
+                });
+
+                if(response.status === 401){
+                    window.location.href = "/login";
+                    return;
+                }
+
+                if(response.status === 403){
+                    Swal.fire("Akses ditolak","","warning");
+                    return;
+                }
+
+                const data = await response.json();
+
+                if ($.fn.DataTable.isDataTable('#datatablesIndex')) {
+                    $('#datatablesIndex').DataTable().clear().destroy();
+                }
+
+                table = $("#datatablesIndex").DataTable({
+                    data: data,
+                    responsive: true,
+                    pageLength: 25,
+                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]], 
+
+                    autoWidth: false,
+                    columnDefs: [
+                        {
+                            targets: 0,
+                            data: null,
+                            render: (d,t,r,m)=>m.row + m.settings._iDisplayStart + 1,
+                            className:"text-center",
+                            orderable:false,
+                            width: "5%"
+                        },
+                        {
+                            targets:1,
+                            data:"userId",
+                            width: "15%",
+                            className: "text-nowrap"
+                        },
+                        {
+                            targets:2,
+                            data:"fullname",
+                            width: "35%",
+                            responsivePriority: 1 
+                        },
+                        {
+                            targets:3,
+                            data:"username",
+                            width: "25%"
+                        },
+                        {
+                            targets:4,
+                            data:null,
+                            render:data=>`
+                                <div class="btn-group btn-group-sm">
+                                    <a href="/user/detail?id=${data.id}" class="btn btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button class="btn btn-danger"
+                                            onclick="deleteUser('${data.id}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            `,
+                            className:"text-center",
+                            orderable:false,
+                            width: "20%",
+                            responsivePriority: 2 
+                        }
+                    ],
+                    language:{
+                        search:"_INPUT_",
+                        searchPlaceholder:" Search user...",
+                        lengthMenu:"Show _MENU_ Data",
+                        paginate:{ first:"«", last:"»", next:"›", previous:"‹" }
+                    },
+                    dom:"<'row mb-3'<'col-md-6'l><'col-md-6'f>>"+
+                        "<'table-responsive card-body p-0't>"+
+                        "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+                
+                    drawCallback: function() {
+                        $('.dataTables_length select').addClass('custom-select custom-select-sm rounded');
+                        $('.dataTables_filter input').addClass('form-control rounded shadow-sm');
+
+                        if($.fn.responsive){
+                            table.responsive.recalc();
+                        }
+                    }
+                });
+            }
+
+            $("#createUserForm").submit(async function (e) {
+                e.preventDefault();
+
+                const form = e.target;
+
+                const payload = {
+                    username: form.username.value,
+                    fullname: form.fullname.value,
+                    password: form.password.value
+                };
+
+                const response = await fetch("/api/user", {
+                    method:"POST",
+                    credentials:"include",
+                    headers:{ "Content-Type":"application/json" },
+                    body:JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon:'success',
+                        title:'Berhasil',
+                        timer:1500,
+                        showConfirmButton:false
+                    }).then(()=>{
+                        $("#createUser").modal("hide");
+                        form.reset();
+                        loadUsers();
+                    });
+                } else {
+                    Swal.fire({ icon:'error', title:'Gagal create user' });
+                }
             });
 
-            if (response.ok) {
-                Swal.fire({
-                    icon:'success',
-                    timer:1500,
-                    showConfirmButton:false
-                }).then(()=>loadUsers());
-            } else {
-                Swal.fire({ icon:'error', title:'Gagal delete' });
-            }
-        }
+            async function deleteUser(id) {
 
-        $('#createUser').on('shown.bs.modal', function () {
-            const data = table.rows().data().toArray();
-            generateUserId(data);
-        });
+                const result = await Swal.fire({
+                    title:"Yakin?",
+                    text:"User akan dihapus",
+                    icon:"warning",
+                    showCancelButton:true,
+                    confirmButtonColor:"#d33",
+                    cancelButtonColor:"#6c757d"
+                });
+
+                if (!result.isConfirmed) return;
+
+                const response = await fetch(`/api/user/${id}`, {
+                    method:"DELETE",
+                    credentials:"include"
+                });
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon:'success',
+                        timer:1500,
+                        showConfirmButton:false
+                    }).then(()=>loadUsers());
+                } else {
+                    Swal.fire({ icon:'error', title:'Gagal delete' });
+                }
+            }
+
+            $('#createUser').on('shown.bs.modal', function () {
+                const data = table.rows().data().toArray();
+                generateUserId(data);
+            });
+
+            $(window).on('resize', function() {
+                clearTimeout(window.datatableResizeTimeout);
+                window.datatableResizeTimeout = setTimeout(function() {
+                    if (table) {
+                        table.columns.adjust().responsive.recalc();
+                    }
+                }, 250);
+            });
+
+            $(document).ready(function() {
+                $(window).trigger('resize');
+            });
+
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden && table) {
+                    setTimeout(() => table.columns.adjust().responsive.recalc(), 100);
+                }
+            });
 
     </script>
 </body>

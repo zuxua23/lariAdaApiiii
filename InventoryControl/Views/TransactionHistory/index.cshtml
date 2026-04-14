@@ -1,0 +1,266 @@
+<body class="hold-transition sidebar-mini layout-fixed">
+
+   
+
+    <div class="wrapper">
+
+        @Html.Partial("_Navbar")
+        @Html.Partial("_Sidebar")
+        @Html.Partial("_Views")
+
+       <div class="content-wrapper">
+
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="header-icon mr-3">
+                                <i class="fas fa-boxes nav-icon text-primary" style="font-size: 2.25rem; opacity: 0.8;"></i>
+                            </div>
+                            <div>
+                                <h1 class="h3 mb-1 text-dark font-weight-bold">Transaction History</h1>
+                                <p class="mb-0 text-muted small">Show Your History of Transaction</p>
+                            </div>
+                        </div>
+
+                        <nav aria-label="breadcrumb" class="modern-breadcrumb">
+                            <ol class="breadcrumb bg-transparent p-0 mb-0">
+                                <li class="breadcrumb-item"><a href="/home" class="text-muted"><i class="fas fa-home mr-1"></i>Dashboard</a></li>
+                                <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-box mr-1"></i>Transaction History</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12">
+                            
+                            <div class="card card-primary card-outline shadow-lg card-tab">
+                                <div class="card-header bg-white border-0 pb-0">
+
+                                    <div class="custom-tab-menu">
+                                        <button class="custom-tab-item active" data-value="">All</button>
+                                        <button class="custom-tab-item" data-value="STOCK_IN">Stock In</button>
+                                        <button class="custom-tab-item" data-value="STOCK_PREPARATION">Stock Preparation</button>
+                                        <button class="custom-tab-item" data-value="STOCK_OUT">Stock Out</button>
+                                    </div>
+
+                                    <div class="card-title-wrapper d-flex justify-content-between align-items-center mt-3">
+                                        <h3 class="card-title font-weight-bold mb-0">
+                                            <i class="fas fa-filter mr-2 text-primary"></i>
+                                            Filter Transactions
+                                        </h3>
+                                    </div>
+                                </div>
+
+                                <div class="card-body pt-3">
+                                    <div class="row filter-row mb-4">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="text-muted small font-weight-bold">From Date</label>
+                                                <input type="date" id="filterFromDate" class="form-control form-control-sm">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="text-muted small font-weight-bold">To Date</label>
+                                                <input type="date" id="filterToDate" class="form-control form-control-sm">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 d-flex align-items-end">
+                                            <div class="w-100 d-flex">
+                                                <button id="btnFilter" class="btn btn-primary btn-sm flex-fill mr-1" title="Filter Data">
+                                                    <i class="fas fa-search"></i>
+                                                </button>
+                                                <button id="btnReset" class="btn btn-default btn-sm flex-fill" title="Reset Filter">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <hr>
+
+                                    <div class="table-responsive">
+                                        <table id="datatablesIndex" class="table table-hover">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th class="text-center" width="60">#</th>
+                                                    <th class="text-nowrap">Date</th>
+                                                    <th>Transaction Type</th>
+                                                    <th class="text-nowrap">DO Number</th>
+                                                    <th>Reader Name</th>
+                                                    <th>Tag Id</th>
+                                                    <th>Item Name</th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        @Html.Partial("_Footer")
+
+    </div>
+
+    @Html.Partial("_BaseScript")
+
+    <script>
+            let table;
+            let currentTxType = ""; 
+
+            const dummyTransactions = [
+                { id: 1, txDate: "2026-04-10", txType: "STOCK_IN", doNumber: "DO-IN-1001", readerName: "Gate Inbound 1", tagId: "E200001B", itemName: "Sato Printer Part A" },
+                { id: 2, txDate: "2026-04-10", txType: "STOCK_IN", doNumber: "DO-IN-1001", readerName: "Gate Inbound 1", tagId: "E200001C", itemName: "Sato Printer Part B" },
+                { id: 3, txDate: "2026-04-11", txType: "STOCK_PREPARATION", doNumber: "DO-PR-2041", readerName: "Handheld Reader 2", tagId: "E200002A", itemName: "Thermal Ribbon Black" },
+                { id: 4, txDate: "2026-04-12", txType: "STOCK_OUT", doNumber: "DO-OUT-3099", readerName: "Gate Outbound 1", tagId: "E200001B", itemName: "Sato Printer Part A" },
+                { id: 5, txDate: "2026-04-14", txType: "STOCK_IN", doNumber: "DO-IN-1002", readerName: "Gate Inbound 2", tagId: "E200003X", itemName: "Label Roll 4x6" },
+                { id: 6, txDate: "2026-04-14", txType: "STOCK_OUT", doNumber: "DO-OUT-3100", readerName: "Gate Outbound 1", tagId: "E200004Z", itemName: "Sato Printer Part C" }
+            ];
+
+            async function fetchTransactions(fromDate, toDate, txType) {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        let filteredData = dummyTransactions.filter(item => {
+                            let matchDate = true;
+                            let matchType = true;
+
+                            if (fromDate) matchDate = matchDate && (item.txDate >= fromDate);
+                            if (toDate) matchDate = matchDate && (item.txDate <= toDate);
+                            if (txType) matchType = (item.txType === txType);
+
+                            return matchDate && matchType;
+                        });
+                        resolve(filteredData);
+                    }, 300);
+                });
+            }
+
+            $(document).ready(function () {
+                loadData();
+
+                $(".custom-tab-item").on("click", function() {
+                    $(".custom-tab-item").removeClass("active");
+                    $(this).addClass("active");
+                    
+                    currentTxType = $(this).data("value");
+                    
+                    loadData();
+                });
+
+                $("#btnFilter").on("click", function() {
+                    loadData();
+                });
+
+                $("#btnReset").on("click", function() {
+                    $("#filterFromDate").val("");
+                    $("#filterToDate").val("");
+                    
+                    $(".custom-tab-item").removeClass("active");
+                    $(".custom-tab-item[data-value='']").addClass("active");
+                    currentTxType = "";
+
+                    loadData();
+                });
+            });
+
+            async function loadData() {
+                const fromDate = $("#filterFromDate").val();
+                const toDate = $("#filterToDate").val();
+
+                const data = await fetchTransactions(fromDate, toDate, currentTxType);
+
+                if ($.fn.DataTable.isDataTable('#datatablesIndex')) {
+                    $('#datatablesIndex').DataTable().clear().destroy();
+                }
+
+                table = $("#datatablesIndex").DataTable({
+                    data: data,
+                    responsive: true,
+                    pageLength: 5,
+                    lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
+                    
+                    autoWidth: false, 
+                    columnDefs: [
+                        { targets: 0, data: null, render: (data, type, row, meta) => meta.row + meta.settings._iDisplayStart + 1, orderable: false, searchable: false, width: "5%", className: "text-center" },
+                        {
+                            targets: 1,
+                            data: "txDate",
+                            width: "10%",
+                            className: "text-nowrap" 
+                        },
+                        {
+                            targets: 2,
+                            data: "txType",
+                            width: "15%",
+                            responsivePriority: 2, 
+                            render: function (data) {
+                                if (data === "STOCK_IN") return `<span class="badge badge-success">${data}</span>`;
+                                if (data === "STOCK_PREPARATION") return `<span class="badge badge-warning">${data}</span>`;
+                                if (data === "STOCK_OUT") return `<span class="badge badge-danger">${data}</span>`;
+                                return data;
+                            }
+                        },
+                        {
+                            targets: 3,
+                            data: "doNumber",
+                            width: "15%",
+                            className: "text-nowrap" 
+                        },
+                        { targets: 4, data: "readerName", width: "15%" },
+                        { targets: 5, data: "tagId", width: "15%", render: function(data) { return `<code>${data}</code>`; } },
+                        {
+                            targets: 6,
+                            data: "itemName",
+                            width: "25%",
+                            responsivePriority: 1  
+                        }
+                    ],
+                    language: {
+                        search: "_INPUT_",
+                        searchPlaceholder: " Search transactions...",
+                        lengthMenu: "Show _MENU_ Entries",
+                        emptyTable: "No transactions found.",
+                        paginate: { previous: "Previous", next: "Next" }
+                    },
+                    dom: "<'row mb-3'<'col-md-6'l><'col-md-6'f>>" +
+                         "<'table-responsive card-body p-0't>" +
+                         "<'row mt-3 align-items-center'<'col-md-5'i><'col-md-7'p>>",
+                    drawCallback: function() {
+                        $('.dataTables_length select').addClass('custom-select custom-select-sm rounded');
+                        $('.dataTables_filter input').addClass('form-control form-control-sm rounded shadow-sm');
+                        if($.fn.responsive){
+                            table.responsive.recalc();
+                        }
+                    }
+                });
+            }
+            $(window).on('resize', function() {
+                clearTimeout(window.datatableResizeTimeout);
+                window.datatableResizeTimeout = setTimeout(function() {
+                    if (table) {
+                        table.columns.adjust().responsive.recalc();
+                    }
+                }, 250);
+            });
+
+            $(document).ready(function() {
+                $(window).trigger('resize');
+            });
+
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden && table) {
+                    setTimeout(() => table.columns.adjust().responsive.recalc(), 100);
+                }
+            });
+    </script>
+</body>
