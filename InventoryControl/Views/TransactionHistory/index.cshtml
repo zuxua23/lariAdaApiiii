@@ -95,6 +95,7 @@
                                                     <th>Reader Name</th>
                                                     <th>Tag Id</th>
                                                     <th>Item Name</th>
+                                                    <th>Location Name</th>
                                                 </tr>
                                             </thead>
                                         </table>
@@ -116,34 +117,27 @@
 
     <script>
             let table;
-            let currentTxType = ""; 
-
-            const dummyTransactions = [
-                { id: 1, txDate: "2026-04-10", txType: "STOCK_IN", doNumber: "DO-IN-1001", readerName: "Gate Inbound 1", tagId: "E200001B", itemName: "Sato Printer Part A" },
-                { id: 2, txDate: "2026-04-10", txType: "STOCK_IN", doNumber: "DO-IN-1001", readerName: "Gate Inbound 1", tagId: "E200001C", itemName: "Sato Printer Part B" },
-                { id: 3, txDate: "2026-04-11", txType: "STOCK_PREPARATION", doNumber: "DO-PR-2041", readerName: "Handheld Reader 2", tagId: "E200002A", itemName: "Thermal Ribbon Black" },
-                { id: 4, txDate: "2026-04-12", txType: "STOCK_OUT", doNumber: "DO-OUT-3099", readerName: "Gate Outbound 1", tagId: "E200001B", itemName: "Sato Printer Part A" },
-                { id: 5, txDate: "2026-04-14", txType: "STOCK_IN", doNumber: "DO-IN-1002", readerName: "Gate Inbound 2", tagId: "E200003X", itemName: "Label Roll 4x6" },
-                { id: 6, txDate: "2026-04-14", txType: "STOCK_OUT", doNumber: "DO-OUT-3100", readerName: "Gate Outbound 1", tagId: "E200004Z", itemName: "Sato Printer Part C" }
-            ];
+            let currentTxType = "";
 
             async function fetchTransactions(fromDate, toDate, txType) {
-                return new Promise((resolve) => {
-                    setTimeout(() => {
-                        let filteredData = dummyTransactions.filter(item => {
-                            let matchDate = true;
-                            let matchType = true;
 
-                            if (fromDate) matchDate = matchDate && (item.txDate >= fromDate);
-                            if (toDate) matchDate = matchDate && (item.txDate <= toDate);
-                            if (txType) matchType = (item.txType === txType);
+            let url = `/api/transaction/history?`;
 
-                            return matchDate && matchType;
-                        });
-                        resolve(filteredData);
-                    }, 300);
-                });
-            }
+            if (fromDate) url += `fromDate=${fromDate}&`;
+            if (toDate) url += `toDate=${toDate}&`;
+            if (txType) url += `txType=${txType}`;
+
+        const res = await fetch(url, {
+            credentials: "include"
+        });
+
+        if (!res.ok) {
+            console.error("API ERROR:", res.status);
+            return [];
+        }
+
+        return await res.json();
+        }
 
             $(document).ready(function () {
                 loadData();
@@ -221,8 +215,12 @@
                         {
                             targets: 6,
                             data: "itemName",
-                            width: "25%",
+                            width: "15%",
                             responsivePriority: 1  
+                        },
+                        { targets: 7,
+                            data: "locationName",
+                            width: "15%",
                         }
                     ],
                     language: {

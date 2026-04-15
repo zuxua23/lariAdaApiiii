@@ -182,9 +182,8 @@
 
                 table = $("#datatablesIndex").DataTable({
                     data: data,
-
                     responsive: true,
-                    pageLength: 25,
+                    pageLength: 10,
                     lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]], 
 
                     autoWidth: false, 
@@ -193,27 +192,21 @@
                             targets: 0,
                             data: null,
                             render: (data, type, row, meta) =>
-                                meta.row + meta.settings._iDisplayStart + 1,
+                            meta.row + meta.settings._iDisplayStart + 1,
                             className: "text-center",
                             orderable: false,
-                            width: "5%"
                         },
                         {
                             targets: 1,
-                            data: "locId",
-                            className: "text-nowrap",
-                            width: "15%"
+                            data: "locId"
                         },
                         {
                             targets: 2,
-                            data: "name",
-                            width: "30%",
-                            responsivePriority: 1 
+                            data: "name"
                         },
                         {
                             targets: 3,
-                            data: "description",
-                            width: "35%"
+                            data: "description"
                         },
                         {
                             targets: 4,
@@ -230,9 +223,7 @@
                                 </div>
                             `,
                             className: "text-center",
-                            orderable: false,
-                            width: "15%",
-                            responsivePriority: 2 
+                            orderable: false
                         }
                     ],
 

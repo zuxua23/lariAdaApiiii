@@ -49,7 +49,12 @@ public class UserService : IUserService
                     Id = x.Id,
                     UserId = x.UserId,
                     Fullname = x.Fullname,
-                    Username = x.Username
+                    Username = x.Username,
+                    Roles = _db.UserRoles
+                        .Where(ur => ur.UserId == x.Id)
+                        .Include(ur => ur.Role)
+                        .Select(ur => ur.Role.Name)
+                        .ToList()
                 })
                 .FirstOrDefaultAsync();
 
@@ -69,12 +74,14 @@ public class UserService : IUserService
 
     public async Task CreateAsync(UserDto dto, string createdBy)
     {
+        using var transaction = await _db.Database.BeginTransactionAsync();
+
         try
         {
             var lastItem = await _db.Users
-            .Where(x => !x.IsDelete)
-            .OrderByDescending(x => x.UserId)
-            .FirstOrDefaultAsync();
+                .Where(x => !x.IsDelete)
+                .OrderByDescending(x => x.UserId)
+                .FirstOrDefaultAsync();
 
             int nextNumber = 1;
 
@@ -88,6 +95,9 @@ public class UserService : IUserService
 
             if (string.IsNullOrWhiteSpace(dto.Password))
                 throw new Exception("Password cannot be empty");
+
+            if (string.IsNullOrWhiteSpace(dto.Username))
+                throw new Exception("Username wajib diisi");
 
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
@@ -105,11 +115,35 @@ public class UserService : IUserService
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
 
-            DailyFileLogger.Info($"CreateAsync berhasil untuk UserID {newId}.");
+            if (dto.RoleIds != null && dto.RoleIds.Any())
+            {
+                var validRoles = await _db.Roles
+                    .Where(r => dto.RoleIds.Contains(r.Id) && !r.IsDelete)
+                    .Select(r => r.Id)
+                    .ToListAsync();
+
+                var userRoles = validRoles.Select(roleId => new User_Role
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    UserId = user.Id,
+                    RoleId = roleId,
+                    CreatedBy = createdBy,
+                    CreatedAt = DateTime.UtcNow
+                });
+
+                await _db.UserRoles.AddRangeAsync(userRoles);
+                await _db.SaveChangesAsync();
+            }
+
+            await transaction.CommitAsync();
+
+            DailyFileLogger.Info($"CreateAsync berhasil untuk UserID {newId}");
         }
         catch (Exception ex)
         {
-            DailyFileLogger.Error($"Error di CreateAsync.", ex);
+            await transaction.RollbackAsync(); 
+
+            DailyFileLogger.Error("Error di CreateAsync", ex);
             throw;
         }
     }
@@ -138,6 +172,49 @@ public class UserService : IUserService
             throw;
         }
     }
+    public async Task UpdateUserRolesAsync(UpdateUserRoleDto dto, string updatedBy)
+    {
+        using var trx = await _db.Database.BeginTransactionAsync();
+
+        try
+        {
+            var userExists = await _db.Users
+                .AnyAsync(x => x.Id == dto.UserId && !x.IsDelete);
+
+            if (!userExists)
+                throw new Exception("User tidak ditemukan");
+
+            var oldRoles = _db.UserRoles.Where(x => x.UserId == dto.UserId);
+            _db.UserRoles.RemoveRange(oldRoles);
+
+            if (dto.Roles != null && dto.Roles.Any())
+            {
+                var validRoles = await _db.Roles
+                    .Where(r => dto.Roles.Contains(r.Id) && !r.IsDelete)
+                    .Select(r => r.Id)
+                    .ToListAsync();
+
+                var userRoles = validRoles.Select(roleId => new User_Role
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    UserId = dto.UserId,
+                    RoleId = roleId,
+                    CreatedBy = updatedBy,
+                    CreatedAt = DateTime.UtcNow
+                });
+
+                await _db.UserRoles.AddRangeAsync(userRoles);
+            }
+
+            await _db.SaveChangesAsync();
+            await trx.CommitAsync();
+        }
+        catch (Exception)
+        {
+            await trx.RollbackAsync();
+            throw;
+        }
+    }
 
     public async Task DeleteAsync(string id)
     {
@@ -161,4 +238,6 @@ public class UserService : IUserService
             throw;
         }
     }
+
+
 }

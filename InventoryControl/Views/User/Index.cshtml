@@ -134,6 +134,14 @@
                                     <input type="password" name="password" class="form-control" required>
                                 </div>
                             </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label><i class="fas fa-user-shield mr-2"></i>Role</label>
+                                        <select id="roleSelect" class="form-control" multiple style="width:100%"></select>
+                                    </div>
+                                </div>
+                            </div>
 
                         </div>
 
@@ -154,6 +162,26 @@
     @Html.Partial("_BaseScript")
 
     <script>
+                async function loadRolesDropdown() {
+            const res = await fetch("/api/permission", {
+                credentials: "include"
+            });
+
+            const roles = await res.json();
+
+            let options = roles.map(r =>
+                `<option value="${r.id}">${r.name}</option>`
+            ).join("");
+
+            $("#roleSelect").html(options);
+
+            $("#roleSelect").select2({
+                theme: 'bootstrap4',
+                placeholder: "Search role...",
+                width: '100%',
+                dropdownParent: $('#createUser')
+            });
+        }
 
             function generateUserId(data) {
                 let max = 0;
@@ -279,7 +307,8 @@
                 const payload = {
                     username: form.username.value,
                     fullname: form.fullname.value,
-                    password: form.password.value
+                    password: form.password.value,
+                    roleIds: $("#roleSelect").val()
                 };
 
                 const response = await fetch("/api/user", {
@@ -337,6 +366,7 @@
             $('#createUser').on('shown.bs.modal', function () {
                 const data = table.rows().data().toArray();
                 generateUserId(data);
+                 loadRolesDropdown();
             });
 
             $(window).on('resize', function() {

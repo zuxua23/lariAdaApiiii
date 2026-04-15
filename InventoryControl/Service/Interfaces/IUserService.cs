@@ -9,4 +9,5 @@ public interface IUserService
     Task CreateAsync(UserDto dto, string createdBy);
     Task UpdateAsync(string id, UpdateUserDto dto, string updatedBy);
     Task DeleteAsync(string id);
+    Task UpdateUserRolesAsync(UpdateUserRoleDto dto, string updatedBy);
 }

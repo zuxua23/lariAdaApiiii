@@ -1,48 +1,67 @@
-//namespace InventoryControl.Controllers;
+namespace InventoryControl.Controllers;
 
-//using InventoryControl.DTO;
-//using InventoryControl.Service.Interfaces;
-//using Microsoft.AspNetCore.Authorization;
-//using Microsoft.AspNetCore.Mvc;
-//using System.Security.Claims;
+using InventoryControl.DTO;
+using InventoryControl.Service.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
-//[ApiController]
-//[Route("permission")]
-//public class PermissionApiController : ControllerBase
-//{
-//    private readonly IPermissionService _service;
+[ApiController]
+[Route("api/permission")]
+public class PermissionApiController : ControllerBase
+{
+        private readonly IPermissionService _service;
 
-//    public PermissionApiController(IPermissionService service)
-//    {
-//        _service = service;
-//    }
+        public PermissionApiController(IPermissionService service)
+        {
+            _service = service;
+        }
 
-//    [HttpGet]
-//    public async Task<IActionResult> Get()
-//    {
-//        return Ok(await _service.GetAllAsync());
-//    }
 
-//    [HttpPost]
-//    public async Task<IActionResult> Create(PermissionDto dto)
-//    {
-//        var createdBy = Request.Headers["X-User-Id"].FirstOrDefault() ?? "system";
-//        await _service.CreateAsync(dto, createdBy);
-//        return Ok(new { message = "Permission berhasil dibuat" });
-//    }
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var data = await _service.GetAll();
+            return Ok(data);
+        }
+   
+    [HttpGet("modules")]
+        public async Task<IActionResult> GetModules()
+        {
+            var data = await _service.GetModules();
+            return Ok(data);
+        }
 
-//    [HttpPut("{id}")]
-//    public async Task<IActionResult> Update(string id, PermissionUpdateDto dto)
-//    {
-//        var updatedBy = Request.Headers["X-User-Id"].FirstOrDefault() ?? "system";
-//        await _service.UpdateAsync(id, dto, updatedBy);
-//        return Ok(new { message = "Permission berhasil diperbarui" });
-//    }
 
-//    [HttpDelete("{id}")]
-//    public async Task<IActionResult> Delete(string id)
-//    {
-//        await _service.DeleteAsync(id);
-//        return Ok(new { message = "Permission berhasil dihapus" });
-//    }
-//}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var data = await _service.GetById(id);
+            return Ok(data);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] RoleRequestDto dto)
+        {
+            var user = "system"; // ambil dari login nanti
+            await _service.Create(dto, user);
+            return Ok();
+        }
+
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] RoleRequestDto dto)
+        {
+            var user = "system";
+            await _service.Update(id, dto, user);
+            return Ok();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            await _service.Delete(id);
+            return Ok();
+        }
+}

@@ -101,8 +101,8 @@
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label><i class="fas fa-hashtag mr-2"></i>Role ID</label>
-                                    <input type="text" id="roleId" name="roleId" class="form-control" readonly>
+                                    <label><i class="fas fa-hashtag mr-2"></i>Role Code</label>
+                                    <input type="text" id="roleCode" name="roleCode" class="form-control" required placeholder="Enter role code...">
                                 </div>
                             </div>
                             <div class="col-md-8">
@@ -160,51 +160,70 @@
     @Html.Partial("_BaseScript")
 
     <script>
-        const MODULES = [
-            { key: "stockIn",        label: "Stock IN" },
-            { key: "stockOut",       label: "Stock OUT" },
-            { key: "stockPrep",      label: "Stock Prep" },
-            { key: "stockTaking",    label: "Stock Taking" },
-            { key: "manageUser",     label: "Manage User" },
-            { key: "stockTakingAdj", label: "Stock Taking & Adj" },
-            { key: "manageItem",     label: "Manage Item" },
-            { key: "manageLocation", label: "Manage Location" },
-        ];
+        //         const MODULES = [
+        //     { key: "stockIn", label: "Stock IN" },
+        //     { key: "stockOut", label: "Stock OUT" },
+        //     { key: "stockPrep", label: "Stock Prep" },
+        //     { key: "stockTaking", label: "Stock Taking" },
+        //     { key: "manageUser", label: "Manage User" },
+        //     { key: "stockTakingAdj", label: "Stock Taking & Adj" },
+        //     { key: "manageItem", label: "Manage Item" },
+        //     { key: "manageLocation", label: "Manage Location" },
+        // ];
 
-        const OPERATIONS = ["Create", "View", "Update", "Delete", "Detail", "Export"];
+        // const OPERATIONS = ["Create", "View", "Update", "Delete", "Detail", "Export"];
 
         let table;
 
         $(document).ready(function () {
             renderPermissions();
             loadRoles();
+              loadModules();
         });
 
-        function renderPermissions(existingPermissions = {}) {
+                let MODULES = [];
+
+        async function loadModules() {
+            const res = await fetch("/api/permission/modules", {
+                credentials: "include"
+            });
+
+            MODULES = await res.json();
+
+            renderPermissions();
+        }
+
+
+              function renderPermissions(existingPermissions = {}) {
             const container = document.getElementById("permissionsContainer");
             container.innerHTML = "";
 
             MODULES.forEach(mod => {
+
                 const colDiv = document.createElement("div");
                 colDiv.className = "col-xl-3 col-lg-4 col-md-6";
 
-                const opsHtml = OPERATIONS.map(op => {
-                    const id = `perm_${mod.key}_${op}`;
-                    const checked = existingPermissions[mod.key]?.includes(op) ? "checked" : "";
+                const opsHtml = mod.permissions.map(op => {
+
+                    const id = `perm_${mod.moduleKey}_${op}`;
+                    const checked = existingPermissions[mod.moduleKey]?.includes(op) ? "checked" : "";
+
                     return `
                         <div class="custom-control custom-checkbox">
                             <input type="checkbox"
-                                   class="custom-control-input op-check"
-                                   id="${id}"
-                                   data-module="${mod.key}"
-                                   data-op="${op}"
-                                   ${checked}
-                                   onchange="syncModuleHeader('${mod.key}'); syncSelectAll()">
+                                class="custom-control-input op-check"
+                                id="${id}"
+                                data-module="${mod.moduleKey}"
+                                data-op="${op}"
+                                ${checked}
+                                onchange="syncModuleHeader('${mod.moduleKey}'); syncSelectAll()">
                             <label class="custom-control-label" for="${id}">${op}</label>
                         </div>`;
                 }).join("");
 
-                const allChecked = OPERATIONS.every(op => existingPermissions[mod.key]?.includes(op));
+                const allChecked = mod.permissions.every(op =>
+                    existingPermissions[mod.moduleKey]?.includes(op)
+                );
 
                 colDiv.innerHTML = `
                     <div class="permission-module-card">
@@ -212,32 +231,41 @@
                             <div class="custom-control custom-checkbox mb-0">
                                 <input type="checkbox"
                                        class="custom-control-input module-header-check"
-                                       id="mod_${mod.key}"
+                                       id="mod_${mod.moduleKey}"
                                        ${allChecked ? "checked" : ""}
-                                       onchange="toggleModule('${mod.key}', this.checked)">
-                                <label class="custom-control-label" for="mod_${mod.key}">${mod.label}</label>
+                                       onchange="toggleModule('${mod.moduleKey}', this.checked)">
+                                <label class="custom-control-label" for="mod_${mod.moduleKey}">
+                                    ${mod.moduleName}
+                                </label>
                             </div>
                         </div>
                         <div class="permission-ops">${opsHtml}</div>
-                    </div>`;
+                    </div>
+                `;
 
                 container.appendChild(colDiv);
             });
         }
 
+
         function toggleModule(moduleKey, checked) {
-            document.querySelectorAll(`[data-module="${moduleKey}"]`).forEach(cb => cb.checked = checked);
+            document.querySelectorAll(`[data-module="${moduleKey}"]`)
+                .forEach(cb => cb.checked = checked);
+
+            syncModuleHeader(moduleKey);
             syncSelectAll();
         }
 
         function syncModuleHeader(moduleKey) {
             const ops = document.querySelectorAll(`[data-module="${moduleKey}"]`);
-            document.getElementById(`mod_${moduleKey}`).checked = [...ops].every(c => c.checked);
+            document.getElementById(`mod_${moduleKey}`).checked =
+                [...ops].every(c => c.checked);
         }
 
         function syncSelectAll() {
             const allOps = document.querySelectorAll(".op-check");
-            document.getElementById("selectAllCheck").checked = [...allOps].every(c => c.checked);
+            document.getElementById("selectAllCheck").checked =
+                [...allOps].every(c => c.checked);
         }
 
         function toggleSelectAll(checked) {
@@ -253,12 +281,17 @@
 
         function collectPermissions() {
             const result = {};
+
             MODULES.forEach(mod => {
-                const checked = [...document.querySelectorAll(`[data-module="${mod.key}"]`)]
+                const checked = [...document.querySelectorAll(`[data-module="${mod.moduleKey}"]`)]
                     .filter(cb => cb.checked)
                     .map(cb => cb.dataset.op);
-                if (checked.length > 0) result[mod.key] = checked;
+
+                if (checked.length > 0) {
+                    result[mod.moduleKey] = checked;
+                }
             });
+
             return result;
         }
 
@@ -266,19 +299,9 @@
             return document.querySelectorAll(".op-check:checked").length;
         }
 
-        function generateRoleId(data) {
-            let max = 0;
-            data.forEach(role => {
-                if (!role.roleId) return;
-                let number = parseInt(role.roleId.replace("ROLE", ""));
-                if (number > max) max = number;
-            });
-            let next = max + 1;
-            $("#roleId").val("ROLE" + String(next).padStart(5, "0"));
-        }
 
         async function loadRoles() {
-            const response = await fetch("/api/role", {
+            const response = await fetch("/api/permission", {
                 method: "GET",
                 credentials: "include"
             });
@@ -292,115 +315,118 @@
                 $("#datatablesIndex").DataTable().clear().destroy();
             }
 
-            table = $("#datatablesIndex").DataTable({
-                data: data,
-                responsive: true,
-                pageLength: 25,
-                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]], 
+        table = $("#datatablesIndex").DataTable({
+            data: data,
+            responsive: true,
+            pageLength: 10,
+            autoWidth: false,
 
-                autoWidth: false, 
-                columnDefs: [
-                    {
-                        targets: 0,
-                        data: null,
-                        render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1,
-                        className: "text-center",
-                        orderable: false,
-                        width: "5%" 
-                    },
-                    { 
-                        targets: 1, 
-                        data: "roleId",
-                        className: "text-nowrap", 
-                        width: "20%" 
-                    },
-                    { 
-                        targets: 2, 
-                        data: "roleName",
-                        width: "50%", 
-                        responsivePriority: 1 
-                    },
-                    {
-                        targets: 3, 
-                        data: null,
-                        render: data => `
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-info" onclick="openEditRole('${data.id}')">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-danger" onclick="deleteRole('${data.id}')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>`,
-                        className: "text-center",
-                        orderable: false,
-                        width: "25%", 
-                        responsivePriority: 2 
-                    }
-                ],
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: " Search role...",
-                    lengthMenu: "Show _MENU_ Data",
-                    paginate: { first: "«", last: "»", next: "›", previous: "‹" }
+            columnDefs: [
+                {
+                    targets: 0,
+                    data: null,
+                    render: (d, t, r, m) => m.row + m.settings._iDisplayStart + 1,
+                    className: "text-center",
+                    orderable: false
                 },
-                dom: "<'row mb-3'<'col-md-6'l><'col-md-6'f>>" +
-                     "<'table-responsive card-body p-0't>" +
-                     "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
-
-                drawCallback: function() {
-                    $('.dataTables_length select').addClass('custom-select custom-select-sm rounded');
-                    $('.dataTables_filter input').addClass('form-control rounded shadow-sm');
-
-                    if($.fn.responsive){
-                        table.responsive.recalc();
-                    }
+                { targets: 1, data: "code" },
+                { targets: 2, data: "name" },
+                {
+                    targets: 3,
+                    data: "isActive",
+                    render: data =>
+                        data
+                            ? `<span class="badge badge-success">Active</span>`
+                            : `<span class="badge badge-secondary">Inactive</span>`
+                },
+                {
+                    targets: 4,
+                    data: null,
+                    render: data => `
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-info" onclick="openEditRole('${data.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteRole('${data.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `,
+                    className: "text-center",
+                    orderable: false
                 }
-            });
+            ],
+
+            dom:
+                "<'row mb-3'<'col-md-6'l><'col-md-6'f>>" +
+                "<'table-responsive card-body p-0't>" +
+                "<'row mt-3'<'col-md-5'i><'col-md-7'p>>",
+
+            drawCallback: function () {
+                $('.dataTables_length select').addClass('custom-select custom-select-sm rounded');
+                $('.dataTables_filter input').addClass('form-control rounded shadow-sm');
+
+                if ($.fn.responsive) {
+                    table.responsive.recalc(); 
+                }
+            }
+        });
         }
+
 
         $("#modalRole").on("shown.bs.modal", function () {
             if (!$("#roleDbId").val()) {
                 const data = table.rows().data().toArray();
-                generateRoleId(data);
             }
         });
 
+
         async function openEditRole(id) {
-            const response = await fetch(`/api/role/${id}`, {
+            const response = await fetch(`/api/permission/${id}`, {
                 method: "GET",
                 credentials: "include"
             });
 
-            if (!response.ok) {
-                Swal.fire({ icon: "error", title: "Gagal mengambil data role" });
-                return;
-            }
-
             const role = await response.json();
+            console.log("ROLE DETAIL:", role);
 
             $("#modalRoleTitle").text("Edit Role");
             $("#roleDbId").val(role.id);
-            $("#roleId").val(role.roleId);
-            $("#roleName").val(role.roleName);
-            renderPermissions(role.permissions || {});
 
+            $("#roleCode").val(role.code || role.roleCode);
+            $("#roleName").val(role.name || role.roleName);
+
+            renderPermissions(role.permissions || {});
             $("#modalRole").modal("show");
         }
 
         $("#modalRole").on("hidden.bs.modal", function () {
             $("#modalRoleTitle").text("Create Role");
             $("#roleDbId").val("");
-            $("#roleId").val("");
-            $("#roleName").val("");
+            $("#roleCode").val(""); 
+            $("#roleName").val(""); 
             renderPermissions();
         });
 
         $("#roleForm").submit(async function (e) {
             e.preventDefault();
 
-            if (countCheckedPermissions() < 3) {
-                Swal.fire({ icon: "warning", title: "Minimal pilih 3 permission" });
+            const codeVal = $("#roleCode").val();
+            const nameVal = $("#roleName").val();
+
+
+            if (!codeVal) {
+            Swal.fire({ icon: "warning", title: "Role Code wajib diisi" });
+            return;
+            }
+
+            if (!nameVal) {
+                Swal.fire({ icon: "warning", title: "Role name wajib diisi" });
+                return;
+            }
+
+            if (countCheckedPermissions() === 0) {
+                Swal.fire({ icon: "warning", title: "Pilih minimal 1 permission" });
                 return;
             }
 
@@ -408,11 +434,12 @@
             const isEdit = !!id;
 
             const payload = {
-                roleName: $("#roleName").val(),
+                roleCode: codeVal,
+                RoleName: nameVal,
                 permissions: collectPermissions()
             };
 
-            const response = await fetch(isEdit ? `/api/role/${id}` : "/api/role", {
+            const response = await fetch(isEdit ? `/api/permission/${id}` : "/api/permission", {
                 method: isEdit ? "PUT" : "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
@@ -430,23 +457,22 @@
                     loadRoles();
                 });
             } else {
-                Swal.fire({ icon: "error", title: isEdit ? "Gagal update role" : "Gagal create role" });
+                Swal.fire({ icon: "error", title: "Gagal simpan role" });
             }
         });
+
 
         async function deleteRole(id) {
             const result = await Swal.fire({
                 title: "Yakin?",
                 text: "Role akan dihapus",
                 icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#6c757d"
+                showCancelButton: true
             });
 
             if (!result.isConfirmed) return;
 
-            const response = await fetch(`/api/role/${id}`, {
+            const response = await fetch(`/api/permission/${id}`, {
                 method: "DELETE",
                 credentials: "include"
             });
@@ -454,27 +480,7 @@
             if (response.ok) {
                 Swal.fire({ icon: "success", timer: 1500, showConfirmButton: false })
                     .then(() => loadRoles());
-            } else {
-                Swal.fire({ icon: "error", title: "Gagal delete" });
             }
         }
-        $(window).on('resize', function() {
-            clearTimeout(window.datatableResizeTimeout);
-            window.datatableResizeTimeout = setTimeout(function() {
-                if (table) {
-                    table.columns.adjust().responsive.recalc();
-                }
-            }, 250); 
-        });
-
-        $(document).ready(function() {
-            $(window).trigger('resize');
-        });
-
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden && table) {
-                setTimeout(() => table.columns.adjust().responsive.recalc(), 100);
-            }
-        });
     </script>
 </body>

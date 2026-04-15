@@ -51,6 +51,24 @@ public class UserApiController : ControllerBase
         return Ok(new { message = "User berhasil diperbarui" });
     }
 
+    [HttpPost("update-roles")]
+    [AuthorizePermissionHybrid("USER_UPDATE")]
+    public async Task<IActionResult> UpdateRoles([FromBody] UpdateUserRoleDto dto)
+    {
+        try
+        {
+            var user = HttpContext.User.Identity?.Name ?? "system";
+
+            await _service.UpdateUserRolesAsync(dto, user);
+
+            return Ok(new { message = "Role berhasil diupdate" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     [HttpDelete("{id}")]
     [AuthorizePermissionHybrid("USER_DELETE")]
     public async Task<IActionResult> Delete(string id)

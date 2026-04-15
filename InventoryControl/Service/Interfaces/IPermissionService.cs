@@ -1,12 +1,15 @@
 ﻿namespace InventoryControl.Service.Interfaces;
 
 using InventoryControl.DTO;
+using InventoryControl.Entity;
 
 public interface IPermissionService
 {
-    Task<List<PermissionResponseDto>> GetAllAsync();
-    Task<PermissionResponseDto?> GetByIdAsync(string id);
-    Task CreateAsync(PermissionDto dto, string createdBy);
-    Task UpdateAsync(string id, PermissionUpdateDto dto, string updatedBy);
-    Task DeleteAsync(string id);
+        Task Create(RoleRequestDto dto, string user);
+        Task Update(string id, RoleRequestDto dto, string user);
+        Task<RoleResponseDto> GetById(string id);
+        Task<object> GetModules();
+        Task<List<Role>> GetAll();
+        Task Delete(string id);
+    
 }

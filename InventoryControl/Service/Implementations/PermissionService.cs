@@ -6,6 +6,7 @@ using InventoryControl.Entity;
 using InventoryControl.Service.Interfaces;
 using InventoryControl.Utility;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 public class PermissionService : IPermissionService
 {
@@ -16,142 +17,125 @@ public class PermissionService : IPermissionService
         _db = db;
     }
 
-    public async Task<List<PermissionResponseDto>> GetAllAsync()
+
+    public async Task Create(RoleRequestDto dto, string user)
     {
-        try
+        var role = new Role
         {
-            var result = await _db.Permissions
-                .Where(x => x.IsDelete == false)
-                .Select(x => new PermissionResponseDto
+            Id = Guid.NewGuid().ToString(),
+            Code = dto.RoleCode,
+            Name = dto.RoleName
+        };
+
+        _db.Roles.Add(role);
+
+        await SavePermissions(role.Id, dto.Permissions, user);
+
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task Update(string id, RoleRequestDto dto, string user)
+    {
+        var role = await _db.Roles.FindAsync(id);
+        if (role == null) throw new Exception("Role not found");
+
+        role.Name = dto.RoleName;
+        role.Code = dto.RoleCode;
+
+        // hapus permission lama
+        var existing = _db.RolePermissions.Where(x => x.RoleId == id);
+        _db.RolePermissions.RemoveRange(existing);
+
+        await SavePermissions(id, dto.Permissions, user);
+
+        await _db.SaveChangesAsync();
+    }
+
+    private async Task SavePermissions(string roleId, Dictionary<string, List<string>> permissions, string user)
+    {
+        foreach (var module in permissions)
+        {
+            var moduleKey = module.Key;
+
+            foreach (var action in module.Value)
+            {
+                var permission = await _db.Permissions
+                    .Include(p => p.Module)
+                    .FirstOrDefaultAsync(x =>
+                        x.Module.ModuleKey == moduleKey &&
+                        x.Operation == action);
+
+                if (permission == null)
+                    continue;
+
+                _db.RolePermissions.Add(new Role_Permission
                 {
-                    Id = x.Id,
-                    Code = x.Code,
-                    Name = x.Name
-                })
-                .ToListAsync();
-
-            DailyFileLogger.Info($"GetAll Permission berhasil. Total={result.Count}");
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            DailyFileLogger.Error("Error di PermissionService.GetAllAsync", ex);
-            throw;
-        }
-    }
-
-    public async Task<PermissionResponseDto?> GetByIdAsync(string id)
-    {
-        try
-        {
-            var permission = await _db.Permissions
-                .Where(x => x.Id == id && x.IsDelete == false)
-                .Select(x => new PermissionResponseDto
-                {
-                    Id = x.Id,
-                    Code = x.Code,
-                    Name = x.Name
-                })
-                .FirstOrDefaultAsync();
-
-            if (permission == null)
-                DailyFileLogger.Warn($"GetById Permission gagal. Id={id} tidak ditemukan");
-            else
-                DailyFileLogger.Info($"GetById Permission berhasil. Id={id}");
-
-            return permission;
-        }
-        catch (Exception ex)
-        {
-            DailyFileLogger.Error($"Error di PermissionService.GetByIdAsync. Id={id}", ex);
-            throw;
-        }
-    }
-
-    public async Task CreateAsync(PermissionDto dto, string createdBy)
-    {
-        try
-        {
-            var exists = await _db.Permissions
-                .AnyAsync(x => x.Code == dto.Code && x.IsDelete == false);
-
-            if (exists)
-            {
-                DailyFileLogger.Warn($"Create Permission gagal. Code={dto.Code} sudah ada");
-                throw new Exception("Permission code sudah ada.");
+                    Id = Guid.NewGuid().ToString(),
+                    RoleId = roleId,
+                    PermissionId = permission.Id
+                });
             }
-
-            var permission = new Permission
-            {
-                Id = Guid.NewGuid().ToString(),
-                Code = dto.Code,
-                Name = dto.Name,
-                CreatedBy = createdBy,
-                CreatedAt = DateTime.UtcNow,
-                IsDelete = false
-            };
-
-            _db.Permissions.Add(permission);
-            await _db.SaveChangesAsync();
-
-            DailyFileLogger.Info($"Permission berhasil dibuat. Code={dto.Code}, User={createdBy}");
-        }
-        catch (Exception ex)
-        {
-            DailyFileLogger.Error($"Error di PermissionService.CreateAsync. Code={dto.Code}", ex);
-            throw;
         }
     }
 
-    public async Task UpdateAsync(string id, PermissionUpdateDto dto, string updatedBy)
+
+    public async Task<RoleResponseDto> GetById(string id)
     {
-        try
+        var role = await _db.Roles.FindAsync(id);
+
+        var rolePermissions = await _db.RolePermissions
+            .Where(x => x.RoleId == id)
+            .Include(x => x.Permission)
+            .ThenInclude(p => p.Module)
+            .ToListAsync();
+
+        var permissions = rolePermissions
+            .GroupBy(x => x.Permission.Module.ModuleKey)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(x => x.Permission.Operation).ToList()
+            );
+
+        return new RoleResponseDto
         {
-            var permission = await _db.Permissions.FindAsync(id);
-
-            if (permission == null || permission.IsDelete)
-            {
-                DailyFileLogger.Warn($"Update Permission gagal. Id={id} tidak ditemukan");
-                throw new Exception("Permission tidak ditemukan.");
-            }
-
-            permission.Code = dto.Code;
-            permission.Name = dto.Name;
-
-            await _db.SaveChangesAsync();
-
-            DailyFileLogger.Info($"Permission berhasil diupdate. Id={id}, User={updatedBy}");
-        }
-        catch (Exception ex)
-        {
-            DailyFileLogger.Error($"Error di PermissionService.UpdateAsync. Id={id}", ex);
-            throw;
-        }
+            Id = role.Id,
+            RoleCode = role.Code,   
+            RoleName = role.Name,
+            Permissions = permissions
+        };
     }
 
-    public async Task DeleteAsync(string id)
+    public async Task<object> GetModules()
     {
-        try
-        {
-            var permission = await _db.Permissions.FindAsync(id);
-
-            if (permission == null || permission.IsDelete)
+        return await _db.Modules
+            .Where(m => m.IsActive)
+            .Select(m => new
             {
-                DailyFileLogger.Warn($"Delete Permission gagal. Id={id} tidak ditemukan");
-                throw new Exception("Permission tidak ditemukan.");
-            }
+                moduleKey = m.ModuleKey,
+                moduleName = m.ModuleName,
+                permissions = m.Permissions
+                    .Select(p => p.Operation)
+                    .Distinct()
+                    .ToList()
+            })
+            .ToListAsync();
+    }
 
-            permission.IsDelete = true;
+    public async Task<List<Role>> GetAll()  
+    {
+        return await _db.Roles.ToListAsync();
+    }
 
-            await _db.SaveChangesAsync();
+    public async Task Delete(string id)
+    {
+        var role = await _db.Roles.FindAsync(id);
+        if (role == null) return;
 
-            DailyFileLogger.Info($"Permission berhasil dihapus (soft delete). Id={id}");
-        }
-        catch (Exception ex)
-        {
-            DailyFileLogger.Error($"Error di PermissionService.DeleteAsync. Id={id}", ex);
-            throw;
-        }
+        var permissions = _db.RolePermissions.Where(x => x.RoleId == id);
+        _db.RolePermissions.RemoveRange(permissions);
+
+        _db.Roles.Remove(role);
+
+        await _db.SaveChangesAsync();
     }
 }

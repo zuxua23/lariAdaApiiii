@@ -14,6 +14,12 @@ public class Permission
     [Column("per_id")]
     public string PerId { get; set; }
 
+    [Column("module_id")]
+    public string? ModuleId { get; set; }
+
+    [Column("operation")]
+    public string? Operation { get; set; }
+
     [Required]
     [Column("per_code")]
     public string Code { get; set; }
@@ -24,7 +30,6 @@ public class Permission
 
     [Column("per_desc")]
     public string? Desc { get; set; }
-
 
     [Column("created_by")]
     public string? CreatedBy { get; set; }
@@ -38,4 +43,5 @@ public class Permission
     public bool IsDelete { get; set; } = false;
 
     public ICollection<Role_Permission> RolePermissions { get; set; }
+    public Module Module { get; set; }
 }

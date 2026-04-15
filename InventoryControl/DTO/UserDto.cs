@@ -7,6 +7,7 @@ public class UserDto
     public string Fullname { get; set; } = null!;
     public string Username { get; set; } = null!;
     public string Password { get; set; } = null!;
+    public List<string> RoleIds { get; set; }
 }
 public class UpdateUserDto
 {
@@ -20,5 +21,10 @@ public class UserResponseDto
     public string UserId { get; set; }
     public string Fullname { get; set; }
     public string Username { get; set; }
+    public List<string> Roles { get; set; }
 }
-
+public class UpdateUserRoleDto
+{
+    public string UserId { get; set; }
+    public List<string> Roles { get; set; } 
+}

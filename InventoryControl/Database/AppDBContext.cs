@@ -14,7 +14,7 @@ public class AppDBContext : DbContext
     public DbSet<User_Role> UserRoles { get; set; }
     public DbSet<Permission> Permissions { get; set; }
     public DbSet<Role_Permission> RolePermissions { get; set; }
-
+    public DbSet<Module> Modules { get; set; }
     public DbSet<Item> Items { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<Location> Locations { get; set; }
@@ -121,6 +121,11 @@ public class AppDBContext : DbContext
             .HasOne(h => h.Item)
             .WithMany()
             .HasForeignKey(h => h.ItemId)
+            .OnDelete(DeleteBehavior.NoAction);
+        modelBuilder.Entity<Permission>()
+            .HasOne(p => p.Module)
+            .WithMany(m => m.Permissions)
+            .HasForeignKey(p => p.ModuleId)
             .OnDelete(DeleteBehavior.NoAction);
     }
 }

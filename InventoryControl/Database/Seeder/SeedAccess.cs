@@ -1,5 +1,6 @@
 using InventoryControl.Entity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace InventoryControl.Database.Seeder;
 
@@ -85,6 +86,39 @@ public class SeedAccess
                 });
             }
         }
+        var permissions = await context.Permissions.ToListAsync();
+
+        foreach (var perm in permissions)
+        {
+            var parts = perm.Code.Split('_');
+
+            if (parts.Length < 2) continue;
+
+            var moduleKey = string.Join("_", parts.Take(parts.Length - 1));
+
+            perm.Operation = parts.Last();
+            var moduleName = moduleKey;
+
+            var module = await context.Modules
+                .FirstOrDefaultAsync(m => m.ModuleKey == moduleKey);
+
+            if (module == null)
+            {
+                module = new Module
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    ModuleKey = moduleKey,
+                    ModuleName = moduleName
+                };
+
+                context.Modules.Add(module);
+                await context.SaveChangesAsync();
+            }
+
+            perm.ModuleId = module.Id;
+        }
+
+        //await _context.SaveChangesAsync();
 
         await context.SaveChangesAsync();
 
@@ -203,5 +237,46 @@ public class SeedAccess
 
             await context.SaveChangesAsync();
         }
+    }
+    public async Task SeedModuleFromPermission(IServiceProvider serviceProvider)
+    {
+        using var _context = new AppDBContext(
+    serviceProvider.GetRequiredService<DbContextOptions<AppDBContext>>());
+
+        await _context.Database.MigrateAsync();
+
+        var permissions = await _context.Permissions.ToListAsync();
+
+        foreach (var perm in permissions)
+        {
+            var parts = perm.Code.Split('_');
+
+            if (parts.Length < 2) continue;
+
+            var moduleKey = string.Join("_", parts.Take(parts.Length - 1));
+
+            var operation = parts.Last();
+            var moduleName = moduleKey; 
+
+            var module = await _context.Modules
+                .FirstOrDefaultAsync(m => m.ModuleKey == moduleKey);
+
+            if (module == null)
+            {
+                module = new Module
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    ModuleKey = moduleKey,
+                    ModuleName = moduleName
+                };
+
+                _context.Modules.Add(module);
+                await _context.SaveChangesAsync();
+            }
+
+            perm.ModuleId = module.Id;
+        }
+
+        await _context.SaveChangesAsync();
     }
 }
