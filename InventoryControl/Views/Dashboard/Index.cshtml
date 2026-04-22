@@ -142,53 +142,49 @@
                             </div>
 
                         </div>
-                        <div class="row mt-4">
-
-                            <!-- STOCK LEVEL -->
-                            <div class="col-md-6">
-                                <div class="dash-card">
-                                    <div class="dash-card-header">
-                                        <span class="dash-card-title">Stock Level</span>
-                                    </div>
-                                    <div id="stockLevelContainer"></div>
-                                </div>
-                            </div>
-
-                            <!-- ITEM LEVEL -->
-                            <div class="col-md-6">
-                                <div class="dash-card">
-                                    <div class="dash-card-header">
-                                        <span class="dash-card-title">Item Stock Detail</span>
-                                    </div>
-                                    <div class="table-responsive">
-                                        <table class="table table-sm">
-                                            <thead>
-                                                <tr>
-                                                    <th>Item</th>
-                                                    <th>Stock</th>
-                                                    <th>Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="itemStockBody"></tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                        <div class="dash-card mt-4">
-                        @*     <div class="dash-card-header">
-                                <span class="dash-card-title">Search Item (QR Code)</span>
-                            </div>
-
-                            <div class="p-3">
-                                <input type="text" id="qrInput" class="form-control" placeholder="Scan QR / Input Tag ID">
-                                <div id="qrResult" class="mt-3"></div>
-                            </div>
-                        </div> *@
-
                     </div>
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="dash-card">
+                                <div class="dash-card-header">
+                                    <span class="dash-card-dot dash-card-dot-blue"></span>
+                                    <span class="dash-card-title">Stock Level</span>
+                                </div>
+                                <div class="dash-stock-chart">
+                                    <canvas id="stockLevelChart" height="200"></canvas>
+                                    <div class="dash-chart-placeholder" id="stockChartPlaceholder">
+                                        <i class="fas fa-chart-pie"></i>
+                                        <p>Loading stock data...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
+                        <div class="col-md-6">
+                            <div class="dash-card">
+                                <div class="dash-card-header">
+                                    <span class="dash-card-dot dash-card-dot-orange"></span>
+                                    <span class="dash-card-title">Item Stock Detail</span>
+                                </div>
+                                <div class="dash-table-wrap">
+                                    <table class="dash-table dash-table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Item</th>
+                                                <th>Stock</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="itemStockBody">
+                                            <tr>
+                                                <td colspan="3" class="dash-table-empty">Loading items...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -294,27 +290,37 @@
 
             $("#itemStockBody").html(html);
         }
-        //    $("#qrInput").on("change", async function () {
 
-        //     const res = await fetch(`/api/tag/qr/${id}`, {
-        //         credentials: "include"
-        //     });
+        function initStockChart() {
+            const ctx = document.getElementById('stockLevelChart');
+            if (!ctx) return;
 
-        //     if (!res.ok) {
-        //         $("#qrResult").html(`<span class="text-danger">Item not found</span>`);
-        //         return;
-        //     }
-
-        //     const item = await res.json();
-
-        //     $("#qrResult").html(`
-        //         <div class="card p-3 shadow-sm">
-        //             <h6>${item.name}</h6>
-        //             <p>Stock: ${item.stock}</p>
-        //             <p>Location: ${item.location}</p>
-        //         </div>
-        //     `);
-        // });
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Available', 'Low Stock', 'Critical'],
+                    datasets: [{
+                        data: [Object.values(stockData).slice(0,3)],
+                        backgroundColor: [
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444'
+                        ],
+                        borderWidth: 0,
+                        cutout: '65%'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
     </script>
 
 </body>
