@@ -1,8 +1,8 @@
-﻿namespace InventoryControl.DTO;
+namespace InventoryControl.DTO;
 
 public class ItemDto
 {
-    public string Id { get; set; } = null!;
+    //public string Id { get; set; } = null!;
     public string ItemName { get; set; } = null!;
 }
 public class ItemUpdateDto

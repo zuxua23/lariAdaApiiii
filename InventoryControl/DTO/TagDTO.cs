@@ -1,9 +1,11 @@
-﻿namespace InventoryControl.DTO;
+namespace InventoryControl.DTO;
 
 
 public class TagResponseDto
 {
     public string TagId { get; set; } = null!;
+    public string EpcTag { get; set; }  
+    public string ItemId { get; set; }
     public string? ItemName { get; set; }
     public string? Status { get; set; }
     public string? Location { get; set; }

@@ -1,4 +1,4 @@
-﻿namespace InventoryControl.Service.Implementations;
+namespace InventoryControl.Service.Implementations;
 
 using InventoryControl.Database;
 using InventoryControl.DTO;
@@ -51,21 +51,30 @@ public class PickingListService : IPickingListService
         }
     }
 
-    public async Task<DO?> GetByIdAsync(string id)
+    public async Task<DOResponseDto?> GetByIdAsync(string id)
     {
-        try
-        {
-            return await _db.DOs
+        var result = await _db.DOs
             .Include(x => x.Details)
+            .ThenInclude(d => d.Item)   // TAMBAH INI
             .FirstOrDefaultAsync(x => x.DoId == id && !x.IsDelete);
 
-        }
-        catch(Exception ex)
-        {
-            DailyFileLogger.Error($"Gagal mengambil data DO dengan ID: {id}", ex);
-            throw;
-        }
+        if (result == null) return null;
 
+        return new DOResponseDto
+        {
+            DoId = result.DoId,
+            DoNumber = result.DoNumber,
+            ScannerType = result.ScannerType,
+            Status = result.Status,
+            CreatedAt = result.CreatedAt,
+            Details = result.Details.Select(d => new DODetailResponseDto
+            {
+                DoDetailId = d.DoDetailId,
+                ItemId = d.ItemId,
+                ItemName = d.Item?.Name,
+                QtyRequired = d.QtyRequired
+            }).ToList()
+        };
     }
 
     public async Task CreateAsync(PickingListDTO request, string createdBy)
@@ -194,4 +203,6 @@ public class PickingListService : IPickingListService
             throw;
         }
     }
+
+
 }

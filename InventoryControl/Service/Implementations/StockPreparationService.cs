@@ -265,4 +265,40 @@ public class StockPreparationService : IStockPreparationService
         }
     }
 
+
+        public async Task<List<DOResponseDto>> GetDoDraftAsync()
+    {
+        try
+        {
+            var result = await _db.DOs
+            .Include(x => x.Details)
+            .ThenInclude(d => d.Item)
+            .Where(x => !x.IsDelete && x.Status == "DRAFT")
+            .Select(x => new DOResponseDto
+            {
+                DoId = x.DoId,
+                DoNumber = x.DoNumber,
+                ScannerType = x.ScannerType,
+                Status = x.Status,
+                CreatedAt = x.CreatedAt,
+                Details = x.Details.Select(d => new DODetailResponseDto
+                {
+                    DoDetailId = d.DoDetailId,
+                    ItemId = d.ItemId,
+                    ItemName = d.Item.Name,
+                    QtyRequired = d.QtyRequired
+                }).ToList()
+            })
+            .ToListAsync();
+
+            DailyFileLogger.Info($"Berhasil mengambil data DO, total: {result.Count}");
+            return result;
+        }
+        catch (Exception ex)
+        {
+            DailyFileLogger.Error("Gagal mengambil data DO", ex);
+            throw;
+        }
+    }
+
 }

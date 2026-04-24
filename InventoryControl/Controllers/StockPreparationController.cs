@@ -48,4 +48,19 @@ public class StockPreparationController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+    [AuthorizePermissionHybrid("STOCK_PREPARATION")]
+
+    public async Task<IActionResult> GetDoDrafts()
+    {
+        try
+        {
+            var result = await _service.GetDoDraftAsync();
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
 }

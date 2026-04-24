@@ -8,8 +8,8 @@ using System.Security.Claims;
 
 namespace InventoryControl.Controllers;
 
-//[ApiController]
-//[Route("api/pickinglist")]
+[ApiController]
+[Route("api/pickinglist")]
 public class PickingListApiController : ControllerBase
 {
     private readonly IPickingListService _service;
@@ -19,14 +19,14 @@ public class PickingListApiController : ControllerBase
         _service = service;
     }
 
-    //[HttpGet]
+    [HttpGet]
     [AuthorizePermissionHybrid("PICKINGLIST_GET")]
     public async Task<IActionResult> Get()
     {
         return Ok(await _service.GetAllAsync());
     }
 
-    //[HttpGet("{id}")]
+    [HttpGet("{id}")]
     [AuthorizePermissionHybrid("PICKINGLIST_GET")]
     public async Task<IActionResult> GetById(string id)
     {
@@ -51,7 +51,7 @@ public class PickingListApiController : ControllerBase
         return Ok(new { message = "DO berhasil dibuat" });
     }
 
-    [HttpPut("{id}")]
+    //[HttpPut("{id}")]
     [AuthorizePermissionHybrid("PICKINGLIST_UPDATE")]
     public async Task<IActionResult> Update(string id, [FromBody] PickingListUpdateDTO dto)
     {

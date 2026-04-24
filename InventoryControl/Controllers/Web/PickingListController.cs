@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using InventoryControl.Utility;
+using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryControl.Controllers.Web;
 
 public class PickingListController : Controller
 {
     [HttpGet("/pickinglist")]
+    [AuthorizePermissionHybrid("PICKINGLIST_GET")]
+
     public IActionResult Index()
     {
         var user = HttpContext.Session.GetString("UserId");

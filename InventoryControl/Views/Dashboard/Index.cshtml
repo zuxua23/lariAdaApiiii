@@ -77,33 +77,61 @@
 
                     </div>
 
-                    <div class="dash-bottom-grid">
+                    <div class="dash-main-grid">
+    
+                        <div class="dash-left-col">
+        
+                            <div class="dash-card dash-card-table">
+                                <div class="dash-card-header">
+                                    <span class="dash-card-dot"></span>
+                                    <span class="dash-card-title">5 Recent Picking Activity</span>
+                                </div>
+                                <div class="dash-table-wrap">
+                                    <table class="dash-table">
+                                        <thead>
+                                            <tr>
+                                                <th>DO Number</th>
+                                                <th>Scanner</th>
+                                                <th>Status</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="recentPicking">
+                                            <tr>
+                                                <td colspan="4" class="dash-table-empty">Loading…</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
 
-                        <div class="dash-card dash-card-table">
-                            <div class="dash-card-header">
-                                <span class="dash-card-dot"></span>
-                                <span class="dash-card-title">Recent Picking Activity</span>
+                            <div class="dash-card dash-card-table">
+                                <div class="dash-card-header">
+                                    <span class="dash-card-dot dash-card-dot-orange"></span>
+                                    <span class="dash-card-title">Item Stock Detail</span>
+                                </div>
+                                <div class="dash-table-wrap">
+                                    <table class="dash-table dash-table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Item</th>
+                                                <th>Stock</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="itemStockBody">
+                                            <tr>
+                                                <td colspan="3" class="dash-table-empty">Loading items...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <div class="dash-table-wrap">
-                                <table class="dash-table">
-                                    <thead>
-                                        <tr>
-                                            <th>DO Number</th>
-                                            <th>Scanner</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="recentPicking">
-                                        <tr>
-                                            <td colspan="3" class="dash-table-empty">Loading…</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+
                         </div>
 
                         <div class="dash-right-col">
-
+        
                             <div class="dash-card">
                                 <div class="dash-card-header">
                                     <span class="dash-card-dot dash-card-dot-green"></span>
@@ -141,10 +169,6 @@
                                 </div>
                             </div>
 
-                        </div>
-                    </div>
-                    <div class="row mt-4">
-                        <div class="col-md-6">
                             <div class="dash-card">
                                 <div class="dash-card-header">
                                     <span class="dash-card-dot dash-card-dot-blue"></span>
@@ -158,31 +182,45 @@
                                     </div>
                                 </div>
                             </div>
+
                         </div>
 
-                        <div class="col-md-6">
-                            <div class="dash-card">
-                                <div class="dash-card-header">
-                                    <span class="dash-card-dot dash-card-dot-orange"></span>
-                                    <span class="dash-card-title">Item Stock Detail</span>
-                                </div>
-                                <div class="dash-table-wrap">
-                                    <table class="dash-table dash-table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Item</th>
-                                                <th>Stock</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="itemStockBody">
-                                            <tr>
-                                                <td colspan="3" class="dash-table-empty">Loading items...</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                    </div> <div class="dash-lower-grid">
+    
+                    <div class="dash-card">
+                        <div class="dash-card-header">
+                            <span class="dash-card-dot dash-card-dot-blue"></span>
+                            <span class="dash-card-title">Stock Level</span>
+                        </div>
+                        <div class="dash-stock-chart">
+                            <canvas id="stockLevelChart" height="200"></canvas>
+                            <div class="dash-chart-placeholder" id="stockChartPlaceholder">
+                                <i class="fas fa-chart-pie"></i>
+                                <p>Loading stock data...</p>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="dash-card">
+                        <div class="dash-card-header">
+                            <span class="dash-card-dot dash-card-dot-orange"></span>
+                            <span class="dash-card-title">Item Stock Detail</span>
+                        </div>
+                        <div class="dash-table-wrap">
+                            <table class="dash-table dash-table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Stock</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="itemStockBody">
+                                    <tr>
+                                        <td colspan="3" class="dash-table-empty">Loading items...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

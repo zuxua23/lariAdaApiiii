@@ -102,11 +102,12 @@ public class StockInService : IStockInService
 
         return new TagResponseDto
         {
-            TagId           = tag.TagId,
-            ItemId          = tag.ItemId,
-            ItemName        = tag.Item?.Name,   // sesuaikan dengan property Item kamu
-            Status          = tag.Status,
-            CurrentLocation = tag.Location?.Name    // sesuaikan dengan property Location kamu
+            TagId = tag.TagId,
+            EpcTag = tag.EpcTag,   
+            ItemId = tag.ItemId,   
+            ItemName = tag.Item?.Name,
+            Status = tag.Status,
+            Location = tag.Location?.Name
         };
     }
 }
