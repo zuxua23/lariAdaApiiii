@@ -36,7 +36,7 @@
 
 	<ItemGroup>
 		<Folder Include="Logs\" />
-		<Folder Include="wwwroot\dist\js\" />
+		<Folder Include="wwwroot\dist\" />
 	</ItemGroup>
 
 </Project>
