@@ -368,16 +368,12 @@ public class StockTakingService : IStockTakingService
             }
         }
 
-        // ── ADD_MANUAL ────────────────────────────────────────────
-        // FIX: filter by ItemId != null, bukan TagId != null
-        // karena ADD_MANUAL tidak punya TagId (tidak ada tag fisik)
         var addManuals = details
             .Where(d => d.Action == "ADD_MANUAL" && d.ItemId != null)
             .ToList();
 
         foreach (var add in addManuals)
         {
-            // Cari tag STANDBY yang memiliki ItemId sama, belum dipakai
             var tag = await _db.Tags
                 .FirstOrDefaultAsync(t => t.ItemId == add.ItemId && t.Status == "STANDBY");
 
